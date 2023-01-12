@@ -4,6 +4,27 @@
   
   
   <entry>
+    <title>劫持LD_PRELOAD</title>
+    <link href="/2023/01/12/%E5%8A%AB%E6%8C%81LD_PRELOAD/"/>
+    <url>/2023/01/12/%E5%8A%AB%E6%8C%81LD_PRELOAD/</url>
+    
+    <content type="html"><![CDATA[]]></content>
+    
+    
+    
+    <tags>
+      
+      <tag>LD_PRELOAD</tag>
+      
+      <tag>hijack</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>Linux系统编程</title>
     <link href="/2023/01/01/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B/"/>
     <url>/2023/01/01/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B/</url>
