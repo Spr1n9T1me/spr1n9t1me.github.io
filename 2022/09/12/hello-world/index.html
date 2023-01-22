@@ -24,7 +24,7 @@
 <meta property="og:description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2022-09-12T09:32:45.994Z">
-<meta property="article:modified_time" content="2022-09-12T14:29:42.711Z">
+<meta property="article:modified_time" content="2023-01-22T16:10:39.317Z">
 <meta property="article:author" content="springtime">
 <meta name="twitter:card" content="summary_large_image">
   
@@ -229,7 +229,7 @@
         
         
         
-          11 mins
+          12 mins
         
       </span>
     
@@ -288,6 +288,8 @@
 <h3 id="problem-1"><a href="#problem-1" class="headerlink" title="problem 1"></a>problem 1</h3><p>使用了图床插件，生成时会自动将图片复制到<blogname>文件夹下，但仍需要修改图片地址</p>
 <p>将图片全部移动至_post文件夹下，注意md中图片的地址需要加上日期，如下形式：</p>
 <p>.&#x2F;2022&#x2F;09&#x2F;12&#x2F;新型EL-webshell初探&#x2F;image-20220907140219279.png</p>
+<p>{filennam}&#x2F;pic_id.png</p>
+<p><strong>注意用斜杠而非反斜杠</strong></p>
 <h3 id="problem2"><a href="#problem2" class="headerlink" title="problem2"></a>problem2</h3><p>有时候使用花括号{}等会出现字符转义失败</p>
 <p>修复见：<a target="_blank" rel="noopener" href="https://coding.f10.org/HEXO/%E4%BF%AE%E5%A4%8Dhexo%E8%8A%B1%E6%8B%AC%E5%8F%B7%E6%98%BE%E7%A4%BA%E4%B8%BA%E5%AD%97%E7%AC%A6%E4%B8%B2123%E5%92%8C125/">https://coding.f10.org/HEXO/%E4%BF%AE%E5%A4%8Dhexo%E8%8A%B1%E6%8B%AC%E5%8F%B7%E6%98%BE%E7%A4%BA%E4%B8%BA%E5%AD%97%E7%AC%A6%E4%B8%B2123%E5%92%8C125/</a></p>
 <p>修复文件：node_modules\highlight.js\lib\core.js#57修改为：</p>
