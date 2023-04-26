@@ -1,0 +1,656 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="springtime">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="反射Java反射机制是在运行状态时，对于任意一个类，都能够获取到这个类的所有属性和方法，对于任意一个对象，都能够调用它的任意一个方法和属性(包括私有的方法和属性)，这种动态获取的信息以及动态调用对象的方法的功能就称为java语言的反射机制。 获取类JVM为每个加载的class创建了对应的Class实例，并在实例中保存了该class的所有信息；因此，如果获取了某个Class实例，我们就可以通过这个C">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Refelction">
+<meta property="og:url" content="http://example.com/2022/12/28/Refelction/index.html">
+<meta property="og:site_name" content="spring&#39;s blog">
+<meta property="og:description" content="反射Java反射机制是在运行状态时，对于任意一个类，都能够获取到这个类的所有属性和方法，对于任意一个对象，都能够调用它的任意一个方法和属性(包括私有的方法和属性)，这种动态获取的信息以及动态调用对象的方法的功能就称为java语言的反射机制。 获取类JVM为每个加载的class创建了对应的Class实例，并在实例中保存了该class的所有信息；因此，如果获取了某个Class实例，我们就可以通过这个C">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2022-12-28T01:45:22.000Z">
+<meta property="article:modified_time" content="2023-02-07T06:28:10.876Z">
+<meta property="article:author" content="springtime">
+<meta property="article:tag" content="java安全">
+<meta property="article:tag" content="反射">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>Refelction - spring&#39;s blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.2","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>springtime</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                Home
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                Archives
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                Categories
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                Tags
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                About
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Refelction"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-12-28 09:45" pubdate>
+          December 28, 2022 am
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.7k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          32 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Refelction</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="反射"><a href="#反射" class="headerlink" title="反射"></a>反射</h1><p>Java反射机制是在运行状态时，对于任意一个类，都能够获取到这个类的所有属性和方法，对于任意一个对象，都能够调用它的任意一个方法和属性(包括私有的方法和属性)，这种<strong>动态获取的信息</strong>以及<strong>动态调用对象的方法</strong>的功能就称为java语言的反射机制。</p>
+<h2 id="获取类"><a href="#获取类" class="headerlink" title="获取类"></a>获取类</h2><p>JVM为每个加载的<code>class</code>创建了对应的<code>Class</code>实例，并在实例中保存了该<code>class</code>的所有信息；因此，如果获取了某个<code>Class</code>实例，我们就可以通过这个<code>Class</code>实例获取到该实例对应的<code>class</code>的所有信息。</p>
+<p>常用的由以下几种方式获取类：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 1.由静态属性class获取</span><br><span class="hljs-type">Class</span> <span class="hljs-variable">clazz</span> <span class="hljs-operator">=</span> String.class;<br><br><span class="hljs-comment">// 2.由getClass()获取</span><br><span class="hljs-type">String</span> <span class="hljs-variable">s</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;&quot;</span>;<br><span class="hljs-type">Class</span> <span class="hljs-variable">clazz</span> <span class="hljs-operator">=</span> s.getClass();<br><br><span class="hljs-comment">// 3.Class.forName()</span><br><span class="hljs-type">Class</span> <span class="hljs-variable">clazz</span> <span class="hljs-operator">=</span> Class.forName(<span class="hljs-string">&quot;java.lang.String&quot;</span>);<br><br><span class="hljs-comment">//4.ClassLoader</span><br>Class&lt;?&gt; clazz = <span class="hljs-built_in">this</span>.getClass().getClassLoader().loadClass(<span class="hljs-string">&quot;com.spring.sec.ClassLoader.reflectTest&quot;</span>);<br></code></pre></td></tr></table></figure>
+
+<p>获取类之后就可以对类进行访问修改等操作，值得注意的是，上述四种方法所获取的Class实例是同一个。</p>
+<h2 id="获取属性"><a href="#获取属性" class="headerlink" title="获取属性"></a>获取属性</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs java">Class&lt;?&gt; clazz = Class.forName(<span class="hljs-string">&quot;com.spring.sec.reflectTest&quot;</span>);<br><br> Field[] fields = clazz.getFields();<br><span class="hljs-comment">//获得类(包括父类)中所有的public属性。</span><br> <span class="hljs-type">Field</span> <span class="hljs-variable">field</span> <span class="hljs-operator">=</span> clazz.getField(<span class="hljs-string">&quot;property&quot;</span>);<br><span class="hljs-comment">//获得类(包括父类)中指定的public属性。</span><br> <br> Field[] declaredFields = clazz.getDeclaredFields();<br><span class="hljs-comment">//获得某个类的所有声明的属性，包括public、private和proteced，但不包括父类的申明属性。</span><br> <span class="hljs-type">Field</span> <span class="hljs-variable">declaredField</span> <span class="hljs-operator">=</span> clazz.getDeclaredField(<span class="hljs-string">&quot;property&quot;</span>);<br><span class="hljs-comment">//获得某个类中的指定属性，包括public、private和proteced，但不包括父类的申明属性。</span><br></code></pre></td></tr></table></figure>
+
+<p>对于获取到的属性，我们想要在具体的实例中获取需要使用<code>get()</code>方法，修改需要使用<code>set()</code>方法.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">Object</span> <span class="hljs-variable">o</span> <span class="hljs-operator">=</span> field.get(clazz.newInstance());<br><span class="hljs-comment">//获取实例中的属性</span><br>field.set(clazz.newInstance(),<span class="hljs-string">&quot;edited_property&quot;</span>);<br><span class="hljs-comment">//修改实例中的属性</span><br></code></pre></td></tr></table></figure>
+
+<p>另外对于<code>private</code>，<code>protected</code>修饰的属性需要先设置可编辑才能修改：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java">privateField.setAccessible(<span class="hljs-literal">true</span>);<span class="hljs-comment">//设置可修改</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="获取方法"><a href="#获取方法" class="headerlink" title="获取方法"></a>获取方法</h2><p><code>getMehtod()</code> 其原型是</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> reflect.Method <span class="hljs-title function_">getMethod</span><span class="hljs-params">(<span class="hljs-meta">@NonNls</span> <span class="hljs-meta">@NotNull</span> String name,</span><br><span class="hljs-params">               							 Class&lt;?&gt;... parameterTypes)</span><br></code></pre></td></tr></table></figure>
+
+<p>一些例子:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs java">Class&lt;?&gt; clazz = Class.forName(<span class="hljs-string">&quot;com.spring.sec.reflectTest&quot;</span>);<br><br>Method[] methods = clazz.getMethods();<br><span class="hljs-comment">//获取所有public的Method（包括父类）</span><br><span class="hljs-type">Method</span> <span class="hljs-variable">method</span> <span class="hljs-operator">=</span> clazz.getMethod(<span class="hljs-string">&quot;name&quot;</span>);<br><span class="hljs-comment">//获取某个public的Method（包括父类）</span><br><br>Method[] methods = clazz.getDeclaredMethods();<br><span class="hljs-comment">//获取类中所有的Methods（不包括父类）</span><br><span class="hljs-type">Method</span> <span class="hljs-variable">method</span> <span class="hljs-operator">=</span> clazz.getDeclaredMethod(<span class="hljs-string">&quot;name&quot;</span>);<br><span class="hljs-comment">//获取类中的某个Method（不包括父类）</span><br><br><span class="hljs-comment">//若要指定方法重载，可以添加参数parameterTypes</span><br><span class="hljs-type">Method</span> <span class="hljs-variable">method</span> <span class="hljs-operator">=</span> clazz.getDeclaredMethod(<span class="hljs-string">&quot;name&quot;</span>,String.class); <br><span class="hljs-comment">//获取参数列表为&lt;String&gt;的方法，识别重载</span><br><br></code></pre></td></tr></table></figure>
+
+<h3 id="调用-invoke"><a href="#调用-invoke" class="headerlink" title="调用: invoke()"></a>调用: invoke()</h3><p>获取方法后执行需要调用<code>invoke()</code>，其原型是</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> Object <span class="hljs-title function_">invoke</span><span class="hljs-params">(Object obj, Object... args)</span><br></code></pre></td></tr></table></figure>
+
+<p><code>obj</code>是实例，<code>args</code>是参数例如</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java">method.invoke(clazz,<span class="hljs-keyword">new</span> <span class="hljs-title class_">String</span>(<span class="hljs-string">&quot;springtime&quot;</span>));<br><br><span class="hljs-comment">//无参方法第二个参数为空</span><br>method.invoke(clazz);<br></code></pre></td></tr></table></figure>
+
+<p>注意：<strong>若调用的方法为静态方法，则第一个参数必须是</strong><code>null</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 获取Integer.parseInt(String)方法，参数为String:</span><br><span class="hljs-type">Method</span> <span class="hljs-variable">m</span> <span class="hljs-operator">=</span> Integer.class.getMethod(<span class="hljs-string">&quot;parseInt&quot;</span>, String.class);<br><span class="hljs-comment">// 调用该静态方法并获取结果:</span><br><span class="hljs-type">Integer</span> <span class="hljs-variable">n</span> <span class="hljs-operator">=</span> (Integer) m.invoke(<span class="hljs-literal">null</span>, <span class="hljs-string">&quot;23333&quot;</span>);<br>System.out.println(n);<br></code></pre></td></tr></table></figure>
+
+<h2 id="获取构造器"><a href="#获取构造器" class="headerlink" title="获取构造器"></a>获取构造器</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs java">Constructor&lt;?&gt; constructor = clazz.getConstructor();<br><span class="hljs-comment">//获取某个public的无参Constructor</span><br>Constructor&lt;?&gt; constructor = clazz.getDeclaredConstructor()<br><span class="hljs-comment">//获取某个无参Constructor</span><br><br>Constructor&lt;?&gt; constructor = clazz.getConstructor(...parameterTypes)<br><span class="hljs-comment">//获取某个public的指定参数的constructor</span><br>Constructor&lt;?&gt; constructor = clazz.getDeclaredConstructor(...parameterTypes)<br><span class="hljs-comment">//获取某个指定参数的constructor</span><br><br>Constructor&lt;?&gt;[] constructors = clazz.getConstructors();<br><span class="hljs-comment">//获取所有public的Constructor</span><br>Constructor&lt;?&gt;[] Constructors = clazz.getDeclaredConstructors();<br><span class="hljs-comment">//获取所有Constructor</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="实例化-newInstance"><a href="#实例化-newInstance" class="headerlink" title="实例化: newInstance()"></a>实例化: newInstance()</h3><p>注意：<code>java.lang.Class.newInstance()</code>与<code>java.lang.refelct.Constructor.newInstance()</code>不同，前者是无参构造方法调用，而后者是构造方法重载调用。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">Object</span> <span class="hljs-variable">o</span> <span class="hljs-operator">=</span> clazz.newInstance();<span class="hljs-comment">//无参</span><br><span class="hljs-type">Object</span> <span class="hljs-variable">o</span> <span class="hljs-operator">=</span> constructor.newInstance(<span class="hljs-meta">@Nullable</span> Object... initargs);<br></code></pre></td></tr></table></figure>
+
+<h2 id="修改final关键字修饰的属性"><a href="#修改final关键字修饰的属性" class="headerlink" title="修改final关键字修饰的属性"></a>修改final关键字修饰的属性</h2><p>被final关键字修饰的属性我们无法使用<code>set()</code>方法修改，需要借助类中的<code>modifiers</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 反射获取Field类的modifiers</span><br><span class="hljs-type">Field</span> <span class="hljs-variable">modifiers</span> <span class="hljs-operator">=</span> field.getClass().getDeclaredField(<span class="hljs-string">&quot;modifiers&quot;</span>);<br><br><span class="hljs-comment">// 设置modifiers修改权限</span><br>modifiers.setAccessible(<span class="hljs-literal">true</span>);<br><br><span class="hljs-comment">// 修改成员变量的Field对象的modifiers值</span><br>modifiers.setInt(field, field.getModifiers() &amp; ~Modifier.FINAL);<br><br><span class="hljs-comment">// 修改成员变量值</span><br>field.set(obj, <span class="hljs-string">&quot;edited_value&quot;</span>);<br></code></pre></td></tr></table></figure>
+
+<h2 id="反射命令执行"><a href="#反射命令执行" class="headerlink" title="反射命令执行"></a>反射命令执行</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java">Class.forName(<span class="hljs-string">&quot;java.lang.Runtime&quot;</span>).getMethod(<span class="hljs-string">&quot;exec&quot;</span>,String.class).invoke(Class.forName(<span class="hljs-string">&quot;java.lang.Runtime&quot;</span>).getMethod(<span class="hljs-string">&quot;getRuntime&quot;</span>).invoke(Class.forName(<span class="hljs-string">&quot;java.lang.Runtime&quot;</span>)),<span class="hljs-string">&quot;calc.exe&quot;</span>);<br></code></pre></td></tr></table></figure>
+
+<h2 id="高版本JDK下的反射"><a href="#高版本JDK下的反射" class="headerlink" title="高版本JDK下的反射"></a>高版本JDK下的反射</h2><p>@TODO</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/java%E5%AE%89%E5%85%A8/" class="category-chain-item">java安全</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/java%E5%AE%89%E5%85%A8/">#java安全</a>
+      
+        <a href="/tags/%E5%8F%8D%E5%B0%84/">#反射</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Refelction</div>
+      <div>http://example.com/2022/12/28/Refelction/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>springtime</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>December 28, 2022</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>Licensed under</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/12/28/ClassLoader/" title="ClassLoader">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">ClassLoader</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/11/18/ctf-%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E7%9A%84%E7%89%B9%E6%AE%8A%E5%A7%BF%E5%8A%BF/" title="ctf-文件包含的特殊姿势">
+                        <span class="hidden-mobile">ctf-文件包含的特殊姿势</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;Table of Contents</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>

@@ -16,21 +16,23 @@
   <meta name="author" content="springtime">
   <meta name="keywords" content="">
   
-    <meta name="description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick">
+    <meta name="description" content="JavaassistAPI: http:&#x2F;&#x2F;www.javassist.org&#x2F;html&#x2F;index.html 0x00 介绍Javassist是可以动态编辑Java字节码的类库。它可以在Java程序运行时定义一个新的类，并加载到JVM中；还可以在JVM加载时修改一个类文件。 在Javassist中每个需要编辑的class都对应一个CtCLass实例，CtClass的含义是编译时的类（compil">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Hello World">
-<meta property="og:url" content="http://example.com/2022/09/12/hello-world/index.html">
+<meta property="og:title" content="Javaassist&amp;ASM">
+<meta property="og:url" content="http://example.com/2022/06/22/Javaassist&ASM/index.html">
 <meta property="og:site_name" content="spring&#39;s blog">
-<meta property="og:description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick">
+<meta property="og:description" content="JavaassistAPI: http:&#x2F;&#x2F;www.javassist.org&#x2F;html&#x2F;index.html 0x00 介绍Javassist是可以动态编辑Java字节码的类库。它可以在Java程序运行时定义一个新的类，并加载到JVM中；还可以在JVM加载时修改一个类文件。 在Javassist中每个需要编辑的class都对应一个CtCLass实例，CtClass的含义是编译时的类（compil">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2022-09-12T09:32:45.994Z">
-<meta property="article:modified_time" content="2023-01-22T16:10:39.317Z">
+<meta property="article:published_time" content="2022-06-22T01:45:22.000Z">
+<meta property="article:modified_time" content="2023-02-11T16:02:48.126Z">
 <meta property="article:author" content="springtime">
+<meta property="article:tag" content="java安全">
+<meta property="article:tag" content="ASM">
 <meta name="twitter:card" content="summary_large_image">
   
   
   
-  <title>Hello World - spring&#39;s blog</title>
+  <title>Javaassist&amp;ASM - spring&#39;s blog</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -195,7 +197,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="Hello World"></span>
+            <span id="subtitle" data-typed-text="Javaassist&amp;ASM"></span>
           
         </div>
 
@@ -206,8 +208,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2022-09-12 17:32" pubdate>
-          September 12, 2022 pm
+        <time datetime="2022-06-22 09:45" pubdate>
+          June 22, 2022 am
         </time>
       </span>
     
@@ -218,7 +220,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.3k words
+          1.8k words
         
       </span>
     
@@ -229,7 +231,7 @@
         
         
         
-          12 mins
+          15 mins
         
       </span>
     
@@ -267,39 +269,56 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">Hello World</h1>
+            <h1 style="display: none">Javaassist&amp;ASM</h1>
             
             
               <div class="markdown-body">
                 
-                <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo new <span class="hljs-string">&quot;My New Post&quot;</span><br></code></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo server<br></code></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo generate<br></code></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo deploy<br></code></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-<h3 id="problem-1"><a href="#problem-1" class="headerlink" title="problem 1"></a>problem 1</h3><p>使用了图床插件，生成时会自动将图片复制到<blogname>文件夹下，但仍需要修改图片地址</p>
-<p>将图片全部移动至_post文件夹下，注意md中图片的地址需要加上日期，如下形式：</p>
-<p>.&#x2F;2022&#x2F;09&#x2F;12&#x2F;新型EL-webshell初探&#x2F;image-20220907140219279.png</p>
-<p>{filennam}&#x2F;pic_id.png</p>
-<p><strong>注意用斜杠而非反斜杠</strong></p>
-<h3 id="problem2"><a href="#problem2" class="headerlink" title="problem2"></a>problem2</h3><p>有时候使用花括号{}等会出现字符转义失败</p>
-<p>修复见：<a target="_blank" rel="noopener" href="https://coding.f10.org/HEXO/%E4%BF%AE%E5%A4%8Dhexo%E8%8A%B1%E6%8B%AC%E5%8F%B7%E6%98%BE%E7%A4%BA%E4%B8%BA%E5%AD%97%E7%AC%A6%E4%B8%B2123%E5%92%8C125/">https://coding.f10.org/HEXO/%E4%BF%AE%E5%A4%8Dhexo%E8%8A%B1%E6%8B%AC%E5%8F%B7%E6%98%BE%E7%A4%BA%E4%B8%BA%E5%AD%97%E7%AC%A6%E4%B8%B2123%E5%92%8C125/</a></p>
-<p>修复文件：node_modules\highlight.js\lib\core.js#57修改为：</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs js"> <span class="hljs-keyword">function</span> <span class="hljs-title function_">escapeHTML</span>(<span class="hljs-params">value</span>) &#123;<br>  <span class="hljs-keyword">return</span> value<br>    .<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/&amp;/g</span>, <span class="hljs-string">&#x27;&amp;amp;&#x27;</span>)<br>    .<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/&lt;/g</span>, <span class="hljs-string">&#x27;&amp;lt;&#x27;</span>)<br>    .<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/&gt;/g</span>, <span class="hljs-string">&#x27;&amp;gt;&#x27;</span>)<br>    .<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/&quot;/g</span>, <span class="hljs-string">&#x27;&amp;quot;&#x27;</span>)<br>    .<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/&#x27;/g</span>, <span class="hljs-string">&#x27;&amp;#x27;&#x27;</span>)<br>    .<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/&#123;/g</span>, <span class="hljs-string">&#x27;&amp;#123;&#x27;</span>)<br>    .<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/&#125;/g</span>, <span class="hljs-string">&#x27;&amp;#125;&#x27;</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
-
-<p>与_config.yml#48</p>
-<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">highlight:</span><br>  <span class="hljs-attr">enable:</span> <span class="hljs-literal">true</span><br>  <span class="hljs-attr">line_number:</span> <span class="hljs-literal">false</span><br>  <span class="hljs-attr">auto_detect:</span> <span class="hljs-literal">true</span><br>  <span class="hljs-attr">tab_replace:</span> <span class="hljs-string">&#x27;&#x27;</span><br>  <span class="hljs-attr">wrap:</span> <span class="hljs-literal">false</span><br>  <span class="hljs-attr">hljs:</span> <span class="hljs-literal">true</span><br><span class="hljs-attr">prismjs:</span><br>  <span class="hljs-attr">enable:</span> <span class="hljs-literal">false</span><br>  <span class="hljs-attr">preprocess:</span> <span class="hljs-literal">true</span><br>  <span class="hljs-attr">line_number:</span> <span class="hljs-literal">true</span><br>  <span class="hljs-attr">tab_replace:</span> <span class="hljs-string">&#x27;&#x27;</span><br></code></pre></td></tr></table></figure>
-
-
-
+                <h1 id="Javaassist"><a href="#Javaassist" class="headerlink" title="Javaassist"></a>Javaassist</h1><p>API: <a target="_blank" rel="noopener" href="http://www.javassist.org/html/index.html">http://www.javassist.org/html/index.html</a></p>
+<h2 id="0x00-介绍"><a href="#0x00-介绍" class="headerlink" title="0x00 介绍"></a>0x00 介绍</h2><p>Javassist是可以动态编辑Java字节码的类库。它可以在Java程序运行时定义一个新的类，并加载到JVM中；还可以在JVM加载时修改一个类文件。</p>
+<p>在Javassist中每个需要编辑的class都对应一个<code>CtCLass</code>实例，<code>CtClass</code>的含义是编译时的类（compile time class），这些类会存储在<code>ClassPool</code>中（Classpool是一个存储CtClass对象的容器）。<code>CtClass</code>中的<code>CtField</code>和<code>CtMethod</code>分别对应Java中的字段和方法。通过<code>CtClass</code>对象即可对类新增字段和修改方法等操作了。</p>
+<p>我们挑几个重要的点去学习，更细节的用法查询文档即可。</p>
+<ul>
+<li>ClassPool：一个基于HashMap实现的CtClass对象容器，其中键是类名称，值是表示该类的CtClass对象。默认的ClassPool使用与底层JVM相同的类路径，因此在某些情况下，可能需要向ClassPool添加类路径或类字节。</li>
+<li>CtClass：表示一个类，这些CtClass对象可以从ClassPool获得。</li>
+<li>CtMethods：表示类中的方法。</li>
+<li>CtFields ：表示类中的字段。</li>
+</ul>
+<h2 id="0x01-常用方法"><a href="#0x01-常用方法" class="headerlink" title="0x01 常用方法"></a>0x01 常用方法</h2><h3 id="ClassPool"><a href="#ClassPool" class="headerlink" title="ClassPool"></a>ClassPool</h3><blockquote>
+<p>ClassPool						<strong>getDefault()</strong>										返回默认的类池。</p>
+<p>ClassPath				    	<strong>insertClassPath(String pathname)</strong>	 在搜索路径的开头插入目录或jar(或zip)文件。</p>
+<p>ClassPath						<strong>insertClassPath(ClassPath cp)</strong>		 ClassPath在搜索路径的开头插入一个对象。</p>
+<p>java.lang.ClassLoader	<strong>getClassLoader()</strong>								 获取类加载器。</p>
+<p>CtClass							<strong>get(String classname)</strong>						读取类文件，并返回CtClass 。</p>
+<p>ClassPath						<strong>appendClassPath(ClassPath cp)</strong>	   将ClassPath对象附加到搜索路径的末尾。</p>
+<p>CtClass							<strong>makeClass(String classname)</strong>  		 创建一个新的public类</p>
+</blockquote>
+<h3 id="CtClass"><a href="#CtClass" class="headerlink" title="CtClass"></a>CtClass</h3><blockquote>
+<p>void 				  <strong>addConstructor(CtConstructor c)</strong>  添加构造器</p>
+<p>void 				  <strong>addMethod(CtMethod m)</strong>				添加方法</p>
+<p>void					<strong>setSuperclass(CtClass clazz)</strong>	更改超类，除非此对象表示接口。</p>
+<p>Class&lt;?&gt;			<strong>toClass(Lookup lookup)</strong>			将此类转换为java.lang.Class对象。</p>
+<p>CtConstructor	 <strong>makeClassInitializer()</strong>				制作一个空的类初始化程序（静态构造函数）。	</p>
+<p>byte[]				  <strong>toBytecode()</strong>							   将该类转换为类文件。</p>
+<p>void					<strong>writeFile()</strong>									将此CtClass 对象表示的类文件写入当前目录。</p>
+<p>void					<strong>writeFile(String directoryName)</strong>  将由此CtClass 对象表示的类文件写入本地磁盘。</p>
+</blockquote>
+<h3 id="CtMethod"><a href="#CtMethod" class="headerlink" title="CtMethod"></a>CtMethod</h3><blockquote>
+<p>void	<strong>insertBefore (String src)</strong>								在正文的开头插入字节码。</p>
+<p>void	<strong>insertAfter	(String src)</strong>								在正文的末尾插入字节码。</p>
+<p>void	<strong>setBody (CtMethod src, ClassMap map)</strong>	 从另一个方法复制方法体</p>
+</blockquote>
+<h3 id="CtConstructor"><a href="#CtConstructor" class="headerlink" title="CtConstructor"></a>CtConstructor</h3><blockquote>
+<p>void			<strong>setBody(String src)</strong>										  	设置构造函数主体。</p>
+<p>void			<strong>setBody(CtConstructor src, ClassMap map)</strong>	  从另一个构造函数复制一个构造函数主体。</p>
+<p>CtMethod	<strong>toMethod(String name, CtClass declaring)</strong>	   复制此构造函数并将其转换为方法。</p>
+</blockquote>
+<h3 id="CtField"><a href="#CtField" class="headerlink" title="CtField"></a>CtField</h3><blockquote>
+<p>int 		<strong>getModifiers()</strong>           	 获取访问修饰符</p>
+<p>void 	 <strong>setModifiers(int mod)</strong>    设置访问权限</p>
+</blockquote>
+<h2 id="0x02-example"><a href="#0x02-example" class="headerlink" title="0x02 example"></a>0x02 example</h2><p>个人感觉Javaassist作为一个工具主要在于应用，因此写一个详细些的demo来熟悉熟悉。</p>
+<h1 id="ASM"><a href="#ASM" class="headerlink" title="ASM"></a>ASM</h1><p><a target="_blank" rel="noopener" href="https://space.bilibili.com/1321054247/channel/seriesdetail?sid=381716">https://space.bilibili.com/1321054247/channel/seriesdetail?sid=381716</a></p>
 
                 
               </div>
@@ -308,6 +327,36 @@
             <div>
               <div class="post-metas my-3">
   
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/java%E5%AE%89%E5%85%A8/" class="category-chain-item">java安全</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/java%E5%AE%89%E5%85%A8/">#java安全</a>
+      
+        <a href="/tags/ASM/">#ASM</a>
+      
+    </div>
   
 </div>
 
@@ -317,8 +366,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>Hello World</div>
-      <div>http://example.com/2022/09/12/hello-world/</div>
+      <div>Javaassist&amp;ASM</div>
+      <div>http://example.com/2022/06/22/Javaassist&amp;ASM/</div>
     </div>
     <div class="license-meta">
       
@@ -330,7 +379,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>Posted on</div>
-          <div>September 12, 2022</div>
+          <div>June 22, 2022</div>
         </div>
       
       
@@ -360,9 +409,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2022/09/12/%E6%96%B0%E5%9E%8BEL-webshell%E5%88%9D%E6%8E%A2/" title="新型EL webshell初探">
+                      <a href="/2022/09/12/hello-world/" title="Hello World">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">新型EL webshell初探</span>
+                        <span class="hidden-mobile">Hello World</span>
                         <span class="visible-mobile">Previous</span>
                       </a>
                     
@@ -370,8 +419,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2022/06/22/Javaassist&amp;ASM/" title="Javaassist&amp;ASM">
-                        <span class="hidden-mobile">Javaassist&amp;ASM</span>
+                      <a href="/2022/06/22/%E4%BB%8E%E6%95%B0%E6%8D%AE%E5%BA%93%E5%88%B0getshell/" title="从数据库到getshell">
+                        <span class="hidden-mobile">从数据库到getshell</span>
                         <span class="visible-mobile">Next</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
