@@ -24,7 +24,7 @@
 <meta property="og:description" content="JavaassistAPI: http:&#x2F;&#x2F;www.javassist.org&#x2F;html&#x2F;index.html 0x00 介绍Javassist是可以动态编辑Java字节码的类库。它可以在Java程序运行时定义一个新的类，并加载到JVM中；还可以在JVM加载时修改一个类文件。 在Javassist中每个需要编辑的class都对应一个CtCLass实例，CtClass的含义是编译时的类（compil">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2022-06-22T01:45:22.000Z">
-<meta property="article:modified_time" content="2023-02-11T16:02:48.126Z">
+<meta property="article:modified_time" content="2023-04-28T01:55:17.705Z">
 <meta property="article:author" content="springtime">
 <meta property="article:tag" content="java安全">
 <meta property="article:tag" content="ASM">
@@ -220,7 +220,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.8k words
+          2.8k words
         
       </span>
     
@@ -231,7 +231,7 @@
         
         
         
-          15 mins
+          24 mins
         
       </span>
     
@@ -317,7 +317,9 @@
 <p>int 		<strong>getModifiers()</strong>           	 获取访问修饰符</p>
 <p>void 	 <strong>setModifiers(int mod)</strong>    设置访问权限</p>
 </blockquote>
-<h2 id="0x02-example"><a href="#0x02-example" class="headerlink" title="0x02 example"></a>0x02 example</h2><p>个人感觉Javaassist作为一个工具主要在于应用，因此写一个详细些的demo来熟悉熟悉。</p>
+<h2 id="0x02-example"><a href="#0x02-example" class="headerlink" title="0x02 example"></a>0x02 example</h2><p>个人感觉Javaassist作为一个工具主要在于应用，因此写一个小demo来熟悉熟悉。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs java"> <span class="hljs-type">ClassPool</span> <span class="hljs-variable">pool</span> <span class="hljs-operator">=</span> ClassPool.getDefault();<br> <span class="hljs-type">CtClass</span> <span class="hljs-variable">ctClass</span> <span class="hljs-operator">=</span> pool.get(<span class="hljs-string">&quot;assist.Demo&quot;</span>);<br> <span class="hljs-comment">//CtClass ctClass = pool.makeClass(&quot;assist.Demo&quot;); </span><br> ctClass.setSuperclass(pool.get(<span class="hljs-string">&quot;java.lang.Object&quot;</span>)); <span class="hljs-comment">//设置父类</span><br> ctClass.setInterfaces(<span class="hljs-keyword">new</span> <span class="hljs-title class_">CtClass</span>[]&#123;pool.get(<span class="hljs-string">&quot;java.io.Serializable&quot;</span>)&#125;);<span class="hljs-comment">//设置接口继承</span><br> <span class="hljs-comment">//增加属性</span><br> <span class="hljs-type">CtField</span> <span class="hljs-variable">ctField0</span> <span class="hljs-operator">=</span> CtField.make(<span class="hljs-string">&quot; private String field0 = \&quot;value0\&quot;;&quot;</span>, ctClass);<br> ctClass.addField(ctField0);<br>ctField0.setModifiers(Modifier.PRIVATE); <span class="hljs-comment">//设置属性为私有</span><br> <span class="hljs-comment">//增加方法</span><br> <span class="hljs-type">CtMethod</span> <span class="hljs-variable">ctMethod0</span> <span class="hljs-operator">=</span> CtMethod.make(<span class="hljs-string">&quot;    public String method0(String string)&#123;\n&quot;</span> +<br>         <span class="hljs-string">&quot;        return \&quot;method0\&quot;;\n&quot;</span> +<br>         <span class="hljs-string">&quot;    &#125;&quot;</span>, ctClass);<br> ctClass.addMethod(ctMethod0);<br> <span class="hljs-comment">//增加构造方法</span><br> <span class="hljs-type">CtConstructor</span> <span class="hljs-variable">ctConstructor1</span> <span class="hljs-operator">=</span> CtNewConstructor.make(<span class="hljs-string">&quot;    public Demo(int param)&#123;\n&quot;</span> +<br>         <span class="hljs-string">&quot;        System.out.println(\&quot;有参构造方法2，参数值：\&quot;+param+\&quot;\\n\&quot;);\n&quot;</span> +<br>         <span class="hljs-string">&quot;    &#125;&quot;</span>, ctClass);<br> ctClass.addConstructor(ctConstructor1);<br><br> System.out.println(Base64.getEncoder().encodeToString(ctClass.toBytecode()));<br></code></pre></td></tr></table></figure>
+
 <h1 id="ASM"><a href="#ASM" class="headerlink" title="ASM"></a>ASM</h1><p><a target="_blank" rel="noopener" href="https://space.bilibili.com/1321054247/channel/seriesdetail?sid=381716">https://space.bilibili.com/1321054247/channel/seriesdetail?sid=381716</a></p>
 
                 
