@@ -16,21 +16,21 @@
   <meta name="author" content="springtime">
   <meta name="keywords" content="">
   
-    <meta name="description" content="0x00 JNDI简介REFhttps:&#x2F;&#x2F;dem0dem0.top&#x2F;2022&#x2F;06&#x2F;01&#x2F;%E6%9C%80%E5%90%8E%E4%B8%80%E6%AC%A1%E5%86%8D%E8%B0%88JNDI&#x2F;">
+    <meta name="description" content="SpringBoot Fatjar从任意文件写到RCE REFhttps:&#x2F;&#x2F;threedr3am.github.io&#x2F;2021&#x2F;04&#x2F;14&#x2F;JDK8%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E5%86%99%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84SpringBoot%20RCE&#x2F; LandGrey’s Blog">
 <meta property="og:type" content="article">
-<meta property="og:title" content="JNDI注入一">
-<meta property="og:url" content="http://example.com/2023/06/02/JNDI%E6%B3%A8%E5%85%A5%E4%B8%80/index.html">
+<meta property="og:title" content="spring&#39;s blog">
+<meta property="og:url" content="http://example.com/2023/06/09/SpringBoot%20Fatjar%E4%BB%8E%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E5%86%99%E5%88%B0%E7%A8%B3%E5%AE%9ARCE/index.html">
 <meta property="og:site_name" content="spring&#39;s blog">
-<meta property="og:description" content="0x00 JNDI简介REFhttps:&#x2F;&#x2F;dem0dem0.top&#x2F;2022&#x2F;06&#x2F;01&#x2F;%E6%9C%80%E5%90%8E%E4%B8%80%E6%AC%A1%E5%86%8D%E8%B0%88JNDI&#x2F;">
+<meta property="og:description" content="SpringBoot Fatjar从任意文件写到RCE REFhttps:&#x2F;&#x2F;threedr3am.github.io&#x2F;2021&#x2F;04&#x2F;14&#x2F;JDK8%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E5%86%99%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84SpringBoot%20RCE&#x2F; LandGrey’s Blog">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2023-06-02T02:59:43.000Z">
-<meta property="article:modified_time" content="2023-06-08T01:04:28.734Z">
+<meta property="article:published_time" content="2023-06-09T03:15:40.698Z">
+<meta property="article:modified_time" content="2023-06-09T03:17:20.105Z">
 <meta property="article:author" content="springtime">
 <meta name="twitter:card" content="summary_large_image">
   
   
   
-  <title>JNDI注入一 - spring&#39;s blog</title>
+  <title>spring&#39;s blog</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -195,7 +195,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="JNDI注入一"></span>
+            <span id="subtitle" data-typed-text=""></span>
           
         </div>
 
@@ -206,8 +206,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2023-06-02 10:59" pubdate>
-          Friday, June 2nd 2023, 10:59 am
+        <time datetime="2023-06-09 11:15" pubdate>
+          Friday, June 9th 2023, 11:15 am
         </time>
       </span>
     
@@ -251,13 +251,15 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">JNDI注入一</h1>
+            <h1 style="display: none"></h1>
             
             
               <div class="markdown-body">
                 
-                <h1 id="0x00-JNDI简介"><a href="#0x00-JNDI简介" class="headerlink" title="0x00 JNDI简介"></a>0x00 JNDI简介</h1><h1 id="REF"><a href="#REF" class="headerlink" title="REF"></a>REF</h1><p><a target="_blank" rel="noopener" href="https://dem0dem0.top/2022/06/01/%E6%9C%80%E5%90%8E%E4%B8%80%E6%AC%A1%E5%86%8D%E8%B0%88JNDI/">https://dem0dem0.top/2022/06/01/%E6%9C%80%E5%90%8E%E4%B8%80%E6%AC%A1%E5%86%8D%E8%B0%88JNDI/</a></p>
-
+                <p>SpringBoot Fatjar从任意文件写到RCE</p>
+<h1 id="REF"><a href="#REF" class="headerlink" title="REF"></a>REF</h1><p><a target="_blank" rel="noopener" href="https://threedr3am.github.io/2021/04/14/JDK8%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E5%86%99%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84SpringBoot%20RCE/">https://threedr3am.github.io/2021/04/14/JDK8%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E5%86%99%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84SpringBoot%20RCE/</a></p>
+<p><a target="_blank" rel="noopener" href="https://landgrey.me/blog/22/">LandGrey’s Blog</a></p>
+<h2 id=""><a href="#" class="headerlink" title=""></a></h2>
                 
               </div>
             
@@ -274,8 +276,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>JNDI注入一</div>
-      <div>http://example.com/2023/06/02/JNDI注入一/</div>
+      <div></div>
+      <div>http://example.com/2023/06/09/SpringBoot Fatjar从任意文件写到稳定RCE/</div>
     </div>
     <div class="license-meta">
       
@@ -287,7 +289,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>Posted on</div>
-          <div>June 2, 2023</div>
+          <div>June 9, 2023</div>
         </div>
       
       
@@ -317,18 +319,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2023/06/02/JNDI%E6%B3%A8%E5%85%A5%E4%BA%8C/" title="JNDI注入二">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">JNDI注入二</span>
-                        <span class="visible-mobile">Previous</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2023/06/01/Java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E4%BA%8C/" title="Java反序列化漏洞二">
-                        <span class="hidden-mobile">Java反序列化漏洞二</span>
+                      <a href="/2023/06/02/Java%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5/" title="Java表达式注入">
+                        <span class="hidden-mobile">Java表达式注入</span>
                         <span class="visible-mobile">Next</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
