@@ -16,21 +16,26 @@
   <meta name="author" content="springtime">
   <meta name="keywords" content="">
   
-    <meta name="description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick">
+    <meta name="description" content="Brief IntroductionData flow analysis(简称DFA)研究的问题就是How data flows on CFG?  更进一步讲，就是： ​	How application-specific data flows the nodes (BBs&#x2F;statements) and edges (control flows) of CFG (a program)?">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Hello World">
-<meta property="og:url" content="http://example.com/2023/08/11/hello-world/index.html">
+<meta property="og:title" content="数据流分析">
+<meta property="og:url" content="http://example.com/2023/12/20/%E6%95%B0%E6%8D%AE%E6%B5%81%E5%88%86%E6%9E%90/index.html">
 <meta property="og:site_name" content="spring&#39;s blog">
-<meta property="og:description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick">
+<meta property="og:description" content="Brief IntroductionData flow analysis(简称DFA)研究的问题就是How data flows on CFG?  更进一步讲，就是： ​	How application-specific data flows the nodes (BBs&#x2F;statements) and edges (control flows) of CFG (a program)?">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2023-08-11T10:13:57.840Z">
-<meta property="article:modified_time" content="2023-08-29T03:10:17.409Z">
+<meta property="og:image" content="http://example.com/2023/12/20/%E6%95%B0%E6%8D%AE%E6%B5%81%E5%88%86%E6%9E%90/image-20231219234142024-1703038108547-1.png">
+<meta property="og:image" content="http://example.com/2023/12/20/%E6%95%B0%E6%8D%AE%E6%B5%81%E5%88%86%E6%9E%90/image-20231220093116967-1703038108558-2.png">
+<meta property="og:image" content="http://example.com/2023/12/20/%E6%95%B0%E6%8D%AE%E6%B5%81%E5%88%86%E6%9E%90/image-20231220094915481-1703038108558-3.png">
+<meta property="og:image" content="http://example.com/2023/12/20/%E6%95%B0%E6%8D%AE%E6%B5%81%E5%88%86%E6%9E%90/image-20231220100058999-1703038108558-4.png">
+<meta property="article:published_time" content="2023-12-20T02:07:55.264Z">
+<meta property="article:modified_time" content="2023-12-20T02:39:00.626Z">
 <meta property="article:author" content="springtime">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/2023/12/20/%E6%95%B0%E6%8D%AE%E6%B5%81%E5%88%86%E6%9E%90/image-20231219234142024-1703038108547-1.png">
   
   
   
-  <title>Hello World - spring&#39;s blog</title>
+  <title>数据流分析 - spring&#39;s blog</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -195,7 +200,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="Hello World"></span>
+            <span id="subtitle" data-typed-text="数据流分析"></span>
           
         </div>
 
@@ -206,8 +211,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2023-08-11 18:13" pubdate>
-          Friday, August 11th 2023, 6:13 pm
+        <time datetime="2023-12-20 10:07" pubdate>
+          Wednesday, December 20th 2023, 10:07 am
         </time>
       </span>
     
@@ -251,39 +256,82 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">Hello World</h1>
+            <h1 style="display: none">数据流分析</h1>
             
             
               <div class="markdown-body">
                 
-                <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo new <span class="hljs-string">&quot;My New Post&quot;</span><br></code></pre></td></tr></table></figure>
+                <h1 id="Brief-Introduction"><a href="#Brief-Introduction" class="headerlink" title="Brief Introduction"></a>Brief Introduction</h1><p>Data flow analysis(简称DFA)研究的问题就是<strong>How data flows on CFG?</strong></p>
+<blockquote>
+<p>更进一步讲，就是：</p>
+<p>​	<strong>How application-specific data flows the nodes (BBs&#x2F;statements) and edges (control flows) of CFG (a program)?</strong></p>
+</blockquote>
+<p>从定义中我们可以提炼出几个DFA的重点：</p>
+<ul>
+<li>application-specific <strong>Data</strong>(数据) &#x3D;&gt; <strong>Abstraction</strong><ul>
+<li>首先是对data做abstraction，比如$+-O⊥\top$。</li>
+</ul>
+</li>
+<li>流经<strong>Nodes</strong> (BBs&#x2F;statements) &#x3D;&gt; <strong>Transfer function</strong><ul>
+<li>对于CFG中的nodes，我们需要用transfer function来进行处理，比如$+ op - &#x3D; -; +op+&#x3D;+$。</li>
+</ul>
+</li>
+<li>通过<strong>Edges</strong> (control flows) &#x3D;&gt; <strong>Control-flow handling</strong><ul>
+<li>对于edges，我们需要处理控制流，例如需要在merge处对上游分支做union。</li>
+</ul>
+</li>
+</ul>
+<p>不同的数据流分析应用（application）有着不同的数据抽象（data abstraction）和不同的<strong>流安全近似策略</strong>（flow safe-approximation strategies），即不同的transfer functions和control-flow handlings。</p>
+<img src="/2023/12/20/%E6%95%B0%E6%8D%AE%E6%B5%81%E5%88%86%E6%9E%90/image-20231219234142024-1703038108547-1.png" srcset="/img/loading.gif" lazyload class="" title="image-20231219234142024">
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo server<br></code></pre></td></tr></table></figure>
+<h1 id="Preliminaries-of-Data-Flow-Analysis"><a href="#Preliminaries-of-Data-Flow-Analysis" class="headerlink" title="Preliminaries of Data Flow Analysis"></a>Preliminaries of Data Flow Analysis</h1><ul>
+<li><p>每一次IR statement的执行都会将<strong>输入状态</strong>(input state)转换成新的<strong>输出状态</strong>(output state)</p>
+</li>
+<li><p>某个IR语句的输入（输出）状态与该语句之前（之后）的程序点（program point）关联。</p>
+<ul>
+<li>程序点（program point）的存在是为了方便我们观察数据抽象域的状态。</li>
+</ul>
+</li>
+</ul>
+<p>输入输出状态转换通常有三种情形：</p>
+<ul>
+<li>无分支(左)：后一个语句的input等于前一的语句的output。<ul>
+<li>$IN[s2]&#x3D;OUT[s1]$</li>
+</ul>
+</li>
+<li>出现分支(中)：后邻所有语句的input等于前一个语句的output。<ul>
+<li>$IN[s2]&#x3D;IN[s3]&#x3D;OUT[s1]$</li>
+</ul>
+</li>
+<li>分支合并(右)：使用meet operator $\bigwedge$ 执行merge操作。<strong>meet operator根据实际情况取值，包括$ \cap ; \cup$。</strong><ul>
+<li>$IN[s2]&#x3D;OUT[s1] \bigwedge OUT[s3]$</li>
+</ul>
+</li>
+</ul>
+<img src="/2023/12/20/%E6%95%B0%E6%8D%AE%E6%B5%81%E5%88%86%E6%9E%90/image-20231220093116967-1703038108558-2.png" srcset="/img/loading.gif" lazyload class="" title="image-20231220093116967">
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo generate<br></code></pre></td></tr></table></figure>
+<p>在数据流分析应用（application）中，我们通常将每个program point与一个数据流值（data-flow values）关联，此data-flow value代表了在该点上可以观察到的<strong>所有可能的程序状态的抽象集合</strong>。</p>
+<p>对于一个application来说，所有可能的data-flow values构成的集合称为该application的域（domain）。</p>
+<img src="/2023/12/20/%E6%95%B0%E6%8D%AE%E6%B5%81%E5%88%86%E6%9E%90/image-20231220094915481-1703038108558-3.png" srcset="/img/loading.gif" lazyload class="" title="image-20231220094915481">
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo deploy<br></code></pre></td></tr></table></figure>
+<p>在上面这个例子中，我们将关注点放在数据的正负上，因此抽象域取${+;-;….}$，在DFA中<strong>不同的关注点与目的决定了我们对抽象域的定义也不同</strong>。</p>
+<p>⭐在以上这些内容的基础上，我们可以说，数据流分析的目的就是要为一个“以safe-approximation为导向”的约束（constraints）集合，为所有语句（statements）s，在IN[s]和OUT[s]上，找到一个解（solution）。</p>
+<ol>
+<li>基于语句语义的约束（表示为transfer functions）。</li>
+<li>基于控制流的约束。</li>
+</ol>
+<p>对于transfer functions的约束来说，有两类分析：</p>
+<ol>
+<li>前向分析（forward analysis），根据输入求输出：$OUT[s]&#x3D;f_s(IN[s])$</li>
+<li>后向分析（backward analysis），根据输出求输入：$IN[s]&#x3D;f_S(OUT[s])$</li>
+</ol>
+<img src="/2023/12/20/%E6%95%B0%E6%8D%AE%E6%B5%81%E5%88%86%E6%9E%90/image-20231220100058999-1703038108558-4.png" srcset="/img/loading.gif" lazyload class="" title="image-20231220100058999">
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-<h3 id="problem-1"><a href="#problem-1" class="headerlink" title="problem 1"></a>problem 1</h3><p>使用了图床插件，生成时会自动将图片复制到<blogname>文件夹下，但仍需要修改图片地址</p>
-<p>将图片全部移动至_post文件夹下，注意md中图片的地址需要加上日期，如下形式：</p>
-<p>.&#x2F;2022&#x2F;09&#x2F;12&#x2F;新型EL-webshell初探&#x2F;image-20220907140219279.png</p>
-<p>{filennam}&#x2F;pic_id.png</p>
-<p><strong>注意用斜杠而非反斜杠</strong></p>
-<h3 id="problem2"><a href="#problem2" class="headerlink" title="problem2"></a>problem2</h3><p>有时候使用花括号{}等会出现字符转义失败</p>
-<p>修复见：<a target="_blank" rel="noopener" href="https://coding.f10.org/HEXO/%E4%BF%AE%E5%A4%8Dhexo%E8%8A%B1%E6%8B%AC%E5%8F%B7%E6%98%BE%E7%A4%BA%E4%B8%BA%E5%AD%97%E7%AC%A6%E4%B8%B2123%E5%92%8C125/">https://coding.f10.org/HEXO/%E4%BF%AE%E5%A4%8Dhexo%E8%8A%B1%E6%8B%AC%E5%8F%B7%E6%98%BE%E7%A4%BA%E4%B8%BA%E5%AD%97%E7%AC%A6%E4%B8%B2123%E5%92%8C125/</a></p>
-<p>修复文件：node_modules\highlight.js\lib\core.js#57修改为：</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs js"> <span class="hljs-keyword">function</span> <span class="hljs-title function_">escapeHTML</span>(<span class="hljs-params">value</span>) &#123;<br>  <span class="hljs-keyword">return</span> value<br>    .<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/&amp;/g</span>, <span class="hljs-string">&#x27;&amp;amp;&#x27;</span>)<br>    .<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/&lt;/g</span>, <span class="hljs-string">&#x27;&amp;lt;&#x27;</span>)<br>    .<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/&gt;/g</span>, <span class="hljs-string">&#x27;&amp;gt;&#x27;</span>)<br>    .<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/&quot;/g</span>, <span class="hljs-string">&#x27;&amp;quot;&#x27;</span>)<br>    .<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/&#x27;/g</span>, <span class="hljs-string">&#x27;&amp;#x27;&#x27;</span>)<br>    .<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/&#123;/g</span>, <span class="hljs-string">&#x27;&amp;#123;&#x27;</span>)<br>    .<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/&#125;/g</span>, <span class="hljs-string">&#x27;&amp;#125;&#x27;</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
-
-<p>与_config.yml#48</p>
-<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">highlight:</span><br>  <span class="hljs-attr">enable:</span> <span class="hljs-literal">true</span><br>  <span class="hljs-attr">line_number:</span> <span class="hljs-literal">false</span><br>  <span class="hljs-attr">auto_detect:</span> <span class="hljs-literal">true</span><br>  <span class="hljs-attr">tab_replace:</span> <span class="hljs-string">&#x27;&#x27;</span><br>  <span class="hljs-attr">wrap:</span> <span class="hljs-literal">false</span><br>  <span class="hljs-attr">hljs:</span> <span class="hljs-literal">true</span><br><span class="hljs-attr">prismjs:</span><br>  <span class="hljs-attr">enable:</span> <span class="hljs-literal">false</span><br>  <span class="hljs-attr">preprocess:</span> <span class="hljs-literal">true</span><br>  <span class="hljs-attr">line_number:</span> <span class="hljs-literal">true</span><br>  <span class="hljs-attr">tab_replace:</span> <span class="hljs-string">&#x27;&#x27;</span><br></code></pre></td></tr></table></figure>
-
-
-
+<p>对于控制流的约束来说，也有两类情况：</p>
+<ol>
+<li>BB内控制流：$IN[s_{i+1}]&#x3D;OUT[s_i],;i&#x3D;1,2,…,n-1$</li>
+<li>BB间控制流：$IN[B]&#x3D;IN[s_1],;OUT[B]&#x3D;OUT[s_n]$</li>
+</ol>
 
                 
               </div>
@@ -301,8 +349,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>Hello World</div>
-      <div>http://example.com/2023/08/11/hello-world/</div>
+      <div>数据流分析</div>
+      <div>http://example.com/2023/12/20/数据流分析/</div>
     </div>
     <div class="license-meta">
       
@@ -314,7 +362,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>Posted on</div>
-          <div>August 11, 2023</div>
+          <div>December 20, 2023</div>
         </div>
       
       
@@ -339,6 +387,23 @@
 
 
 
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/10/01/Java-Memory-Shell/" title="Java Memory Shell">
+                        <span class="hidden-mobile">Java Memory Shell</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
               
             </div>
 
